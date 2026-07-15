@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>პორტფოლიო: Arduino და სენსორები</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --accent-blue: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-yellow: #f59e0b;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --editor-bg: #0b0f19;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* საპრეზენტაციო სლაიდის ჩარჩო (16:9) */
+        .slide-container {
+            width: 100%;
+            max-width: 1280px;
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ჰედერი */
+        .slide-header {
+            padding: 20px 35px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .slide-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #38bdf8, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .slide-tag {
+            font-size: 0.8rem;
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--accent-yellow);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* სამსვეტიანი სამუშაო სივრცე (კოდი | სიმულატორი | მედია) */
+        .slide-body {
+            display: grid;
+            grid-template-columns: 1.1fr 1.1fr 1fr;
+            gap: 20px;
+            padding: 25px;
+            align-items: stretch;
+        }
+
+        @media (max-width: 1100px) {
+            .slide-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* კოდის სექცია */
+        .code-section {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--editor-bg);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        .editor-header {
+            background-color: #131c2e;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .window-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .dot-r { background-color: #ef4444; }
+        .dot-y { background-color: #eab308; }
+        .dot-g { background-color: #22c55e; }
+
+        .file-name {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .code-area {
+            padding: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.75rem;
+            line-height: 1.45;
+            color: #e2e8f0;
+            overflow-y: auto;
+            max-height: 420px;
+        }
+
+        .keyword { color: #f472b6; font-weight: bold; }
+        .type { color: #38bdf8; }
+        .function { color: #fbbf24; }
+        .number { color: #fb7185; }
+        .comment { color: #64748b; font-style: italic; }
+
+        /* სიმულატორი */
+        .simulator-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            justify-content: space-between;
+        }
+
+        canvas {
+            background: #090d16;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: block;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        /* მართვის ინტერფეისი */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            background: rgba(0,0,0,0.25);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            background: #1e293b;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            padding: 2px;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            background: linear-gradient(to right, #38bdf8, #2563eb);
+            color: white;
+        }
+
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* მედია სექცია */
+        .media-section {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .media-placeholder {
+            width: 100%;
+            height: 180px;
+            background-color: #131c2e;
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .media-placeholder video, .media-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .media-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+        }
+
+        .media-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* ფუტერი */
+        .slide-footer {
+            padding: 15px 35px;
+            background-color: rgba(15, 23, 42, 0.6);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container">
+        
+        <!-- ჰედერი -->
+        <div class="slide-header">
+            <div>
+                <h1>უფრო დიდი გამოწვევა — Arduino![cite: 2]</h1>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">სენსორული სისტემების, რეზისტორებისა და კავშირების ინჟინერია[cite: 2]</p>
+            </div>
+            <div class="slide-tag">სლაიდი 6 / 13</div>
+        </div>
+
+        <!-- ძირითადი შინაარსი -->
+        <div class="slide-body">
+            
+            <!-- მარცხენა სვეტი: კოდის რედაქტორი -->
+            <div class="code-section">
+                <div class="editor-header">
+                    <div class="window-dots">
+                        <div class="dot dot-r"></div>
+                        <div class="dot dot-y"></div>
+                        <div class="dot dot-g"></div>
+                    </div>
+                    <div class="file-name">smart_night_light.ino</div>
+                </div>
+                <div class="code-area">
+<span class="keyword">const int</span> ldrPin = A0;  <span class="comment">// სინათლის სენსორი</span>
+<span class="keyword">const int</span> ledPin = <span class="number">9</span>;   <span class="comment">// LED ნათურა</span>
+
+<span class="type">void</span> <span class="function">setup</span>() {
+  <span class="function">pinMode</span>(ledPin, <span class="type">OUTPUT</span>);
+  <span class="function">Serial</span>.<span class="function">begin</span>(<span class="number">9600</span>);
+}
+
+<span class="type">void</span> <span class="function">loop</span>() {
+  <span class="comment">// ვკითხულობთ გარემო სინათლის დონეს (0-1023)</span>
+  <span class="keyword">int</span> lightLevel = <span class="function">analogRead</span>(ldrPin);
+
+  <span class="comment">// თუ ბნელა (მნიშვნელობა < 400), ვანთებთ LED-ს</span>
+  <span class="keyword">if</span> (lightLevel < <span class="number">400</span>) {
+    <span class="function">digitalWrite</span>(ledPin, <span class="type">HIGH</span>);
+  } <span class="keyword">else</span> {
+    <span class="function">digitalWrite</span>(ledPin, <span class="type">LOW</span>);
+  }
+  <span class="function">delay</span>(<span class="number">50</span>);
+}</div>
+            </div>
+
+            <!-- შუა სვეტი: ინტერაქტიული სიმულატორი (სადენების შეერთება და სენსორი) -->
+            <div class="simulator-section">
+                
+                <h3 style="font-size: 1rem; font-weight: 600; color: var(--accent-blue); text-align: center;">ინტერაქტიული წრედი</h3>
+
+                <!-- დაფა და შეერთებები -->
+                <canvas id="arduinoCanvas" width="340" height="200"></canvas>
+
+                <!-- მართვა -->
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label>ოთახის განათება (LDR სენსორი): <span id="luxLabel" style="color: var(--accent-yellow);">სინათლე</span></label>
+                        <input id="luxSlider" type="range" min="100" max="900" value="700">
+                    </div>
+                </div>
+
+                <button class="action-btn" id="wireConnectBtn">🔌 სადენების შეერთება (Connect)</button>
+            </div>
+
+            <!-- მარჯვენა სვეტი: მედია პორტფოლიო -->
+            <div class="media-section">
+                <div class="media-placeholder">
+                    <!-- ჩასვით თქვენი ექსპერიმენტის რეალური ფოტო ან ვიდეო აქ[cite: 2] -->
+                    <!-- <video src="arduino_sensors.mp4" controls autoplay muted></video> -->
+                    <!-- <img src="experiment.jpg" alt="Arduino LDR"> -->
+                    <span style="font-size: 2rem;">📹 / 🖼️</span>
+                    <span class="media-title" style="margin-top: 10px;">საკლასო ექსპერიმენტის მედია[cite: 2]</span>
+                    <span class="media-desc">ჩაანაცვლეთ მოსწავლეების მიერ რეალურად აწყობილი სქემების კადრებით[cite: 2]</span>
+                </div>
+                <div>
+                    <h4 style="font-size: 0.9rem; margin-bottom: 5px; color: var(--accent-green);">ინჟინრული უნარები</h4>
+                    <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;">მოსწავლეები სწავლობენ სადენების, რეზისტორებისა და სენსორების ფიზიკურ შეერთებას, ავითარებენ მოტორიკას და იცავენ უსაფრთხოების წესებს[cite: 2].</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ფუტერი -->
+        <div class="slide-footer">
+            <span>პედაგოგი: თინათინ დავითაძე[cite: 2]</span>
+            <span>ინოვაციური STEM მიდგომები და კრეატიული ინჟინერია[cite: 2]</span>
+        </div>
+
+    </div>
+
+    <!-- JS ლოგიკა სიმულაციისთვის -->
+    <script>
+        const canvas = document.getElementById('arduinoCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const luxSlider = document.getElementById('luxSlider');
+        const luxLabel = document.getElementById('luxLabel');
+        const connectBtn = document.getElementById('wireConnectBtn');
+
+        let isWired = false; // შეერთებულია თუ არა სადენები
+
+        function drawCircuit() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const val = parseInt(luxSlider.value);
+            
+            // ფონი
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Arduino დაფის გამოსახვა
+            ctx.fillStyle = '#1e3a8a';
+            ctx.fillRect(20, 40, 110, 120);
+            ctx.strokeStyle = '#3b82f6';
+            ctx.strokeRect(20, 40, 110, 120);
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 9px sans-serif';
+            ctx.fillText('ARDUINO', 45, 105);
+
+            // Breadboard (მაკეტური დაფა)
+            ctx.fillStyle = '#e2e8f0';
+            ctx.fillRect(190, 40, 130, 120);
+            ctx.fillStyle = '#475569';
+            for (let i = 0; i < 5; i++) {
+                for (let j = 0; j < 8; j++) {
+                    ctx.beginPath();
+                    ctx.arc(210 + i * 22, 55 + j * 12, 2.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // კომპონენტები დაფაზე (LED და რეზისტორი)
+            const ledX = 210, ledY = 91;
+            const ldrX = 298, ldrY = 91;
+
+            // LED
+            ctx.beginPath();
+            ctx.arc(ledX, ledY - 12, 8, 0, Math.PI * 2);
+            if (isWired && val < 400) {
+                ctx.fillStyle = '#4ade80'; // მწვანე LED ინთება სიბნელეში
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = '#4ade80';
+            } else {
+                ctx.fillStyle = '#1e293b';
+            }
+            ctx.fill();
+            ctx.shadowBlur = 0; // რესეტი
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillRect(ledX - 2, ledY - 4, 4, 8);
+
+            // LDR (სინათლის სენსორი)
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(ldrX - 6, ldrY - 14, 12, 10);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(ldrX - 6, ldrY - 14, 12, 10);
+            ctx.fillStyle = '#fff';
+            ctx.font = '7px sans-serif';
+            ctx.fillText('LDR', ldrX - 5, ldrY - 7);
+
+            // სადენების ხაზვა, თუ მომხმარებელმა დააჭირა "Connect"-ს
+            if (isWired) {
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+
+                // სადენი 1 (Arduino Pin 9 -> LED) - ლურჯი
+                ctx.beginPath();
+                ctx.moveTo(130, 60);
+                ctx.bezierCurveTo(150, 40, 170, 80, ledX, ledY);
+                ctx.strokeStyle = '#38bdf8';
+                ctx.stroke();
+
+                // სადენი 2 (Arduino A0 -> LDR) - ყვითელი
+                ctx.beginPath();
+                ctx.moveTo(130, 130);
+                ctx.bezierCurveTo(160, 150, 240, 120, ldrX, ldrY);
+                ctx.strokeStyle = '#f59e0b';
+                ctx.stroke();
+
+                // საერთო დამიწება (GND) - შავი
+                ctx.beginPath();
+                ctx.moveTo(130, 110);
+                ctx.bezierCurveTo(160, 90, 210, 140, 254, 139);
+                ctx.strokeStyle = '#000';
+                ctx.stroke();
+            } else {
+                // მინიშნება
+                ctx.fillStyle = '#f59e0b';
+                ctx.font = '10px sans-serif';
+                ctx.fillText('⚠️ შეაერთეთ სადენები დასაწყებად', 30, 25);
+            }
+        }
+
+        function updateLabels() {
+            const val = parseInt(luxSlider.value);
+            if (val >= 600) {
+                luxLabel.innerText = "კაშკაშა მზე ☀️";
+                luxLabel.style.color = "var(--accent-yellow)";
+            } else if (val >= 400) {
+                luxLabel.innerText = "ოთახის სინათლე 💡";
+                luxLabel.style.color = "var(--accent-blue)";
+            } else {
+                luxLabel.innerText = "ღამე / სიბნელე 🌙";
+                luxLabel.style.color = "#a855f7";
+            }
+            drawCircuit();
+        }
+
+        luxSlider.addEventListener('input', updateLabels);
+
+        connectBtn.addEventListener('click', () => {
+            isWired = !isWired;
+            if (isWired) {
+                connectBtn.innerText = "🔌 კავშირების გათიშვა";
+                connectBtn.style.background = "linear-gradient(to right, #ef4444, #b91c1c)";
+            } else {
+                connectBtn.innerText = "🔌 სადენების შეერთება (Connect)";
+                connectBtn.style.background = "linear-gradient(to right, #38bdf8, #2563eb)";
+            }
+            drawCircuit();
+        });
+
+        // საწყისი ჩვენება
+        drawCircuit();
+    </script>
+</body>
+</html>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>პორტფოლიო: ხელოვნური ცისარტყელა</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --accent-blue: #38bdf8;
+            --accent-purple: #a855f7;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --editor-bg: #0b0f19;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* საპრეზენტაციო სლაიდის ჩარჩო (16:9 იმიტაცია) */
+        .slide-container {
+            width: 100%;
+            max-width: 1240px;
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ჰედერი */
+        .slide-header {
+            padding: 20px 35px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .slide-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #38bdf8, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .slide-tag {
+            font-size: 0.8rem;
+            background-color: rgba(168, 85, 247, 0.1);
+            color: var(--accent-purple);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* ორსვეტიანი სამუშაო სივრცე */
+        .slide-body {
+            display: grid;
+            grid-template-columns: 1fr 1.1fr;
+            gap: 25px;
+            padding: 30px;
+        }
+
+        /* მარცხენა მხარე: კოდი */
+        .code-section {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--editor-bg);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        .editor-header {
+            background-color: #131c2e;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .window-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .dot-r { background-color: #ef4444; }
+        .dot-y { background-color: #eab308; }
+        .dot-g { background-color: #22c55e; }
+
+        .file-name {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .code-area {
+            padding: 20px;
+            font-family: 'Fira Code', 'Courier New', Courier, monospace;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: #e2e8f0;
+            overflow-y: auto;
+            max-height: 420px;
+        }
+
+        .keyword { color: #f472b6; font-weight: bold; }
+        .type { color: #38bdf8; }
+        .function { color: #fbbf24; }
+        .number { color: #fb7185; }
+        .comment { color: #64748b; font-style: italic; }
+
+        /* მარჯვენა მხარე: სიმულატორი */
+        .simulator-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        canvas {
+            background: #090d16;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: block;
+            width: 100%;
+            cursor: crosshair;
+        }
+
+        /* მართვის პანელი */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            background: #1e293b;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            padding: 2px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            background-color: var(--accent-purple);
+            color: white;
+            text-align: center;
+        }
+
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* ფუტერი */
+        .slide-footer {
+            padding: 15px 35px;
+            background-color: rgba(15, 23, 42, 0.6);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 900px) {
+            .slide-body {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container">
+        
+        <!-- სათაური -->
+        <div class="slide-header">
+            <div>
+                <h1>პროექტი „ფიზტერია“: ხელოვნური ცისარტყელა</h1>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">სინათლის დისპერსიისა და გარდატეხის მოდელირება წვიმის წვეთში</p>
+            </div>
+            <div class="slide-tag">სლაიდი 9 / 13</div>
+        </div>
+
+        <!-- შინაარსი -->
+        <div class="slide-body">
+            
+            <!-- მარცხენა სვეტი: კოდი -->
+            <div class="code-section">
+                <div class="editor-header">
+                    <div class="window-dots">
+                        <div class="dot dot-r"></div>
+                        <div class="dot dot-y"></div>
+                        <div class="dot dot-g"></div>
+                    </div>
+                    <div class="file-name">rainbow_dispersion.js</div>
+                </div>
+                <div class="code-area">
+<span class="comment">// სინათლის ტალღის სიგრძეები (nm) და ფერები</span>
+<span class="keyword">const</span> wavelengths = [<span class="number">700</span>, <span class="number">610</span>, <span class="number">570</span>, <span class="number">530</span>, <span class="number">470</span>, <span class="number">420</span>];
+<span class="keyword">const</span> colors = [<span class="comment">'#ff3b30'</span>, <span class="comment">'#ff9500'</span>, <span class="comment">'#ffcc00'</span>, <span class="comment">'#4cd964'</span>, <span class="comment">'#5ac8fa'</span>, <span class="comment">'#5856d6'</span>];
+
+<span class="keyword">function</span> <span class="function">calculateRefraction</span>(incomingAngle, waveLength, dispersion) {
+  <span class="comment">// გარდატეხის კოეფიციენტი წყლისთვის (~1.33)</span>
+  <span class="comment">// დისპერსია იწვევს სხვადასხვა ფერის განსხვავებულ გარდატეხას</span>
+  <span class="keyword">const</span> baseN = <span class="number">1.33</span>;
+  <span class="keyword">const</span> cauchyConst = <span class="number">0.05</span>;
+  
+  <span class="comment">// კოეფიციენტი დამოკიდებულია ტალღის სიგრძეზე</span>
+  <span class="keyword">const</span> n = baseN + cauchyConst * (<span class="number">1</span> / (waveLength / <span class="number">500</span>) - <span class="number">1</span>) * dispersion;
+  
+  <span class="comment">// სნელიუსის კანონი: sin(r) = sin(i) / n</span>
+  <span class="keyword">return</span> Math.<span class="function">asin</span>(Math.<span class="function">sin</span>(incomingAngle) / n);
+}</div>
+            </div>
+
+            <!-- მარჯვენა სვეტი: ინტერაქტიული სიმულატორი -->
+            <div class="simulator-section">
+                <canvas id="rainbowCanvas" width="500" height="230"></canvas>
+
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label>სინათლის ინტენსივობა</label>
+                        <input id="intensitySlider" type="range" min="0.2" max="2" step="0.1" value="1.2">
+                    </div>
+
+                    <div class="control-group">
+                        <label>დისპერსია (დაშლის სიძლიერე)</label>
+                        <input id="dispersionSlider" type="range" min="0.2" max="2.5" step="0.1" value="1.3">
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="action-btn" id="resetLight">🔄 საწყის პოზიციაზე დაბრუნება</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ფუტერი -->
+        <div class="slide-footer">
+            <span>ავტორი: თინათინ დავითაძე[cite: 2]</span>
+            <span>პორტალი „ფიზტერია“ — ფიზიკა ჩვენს გარშემო[cite: 2]</span>
+        </div>
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById('rainbowCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const intensitySlider = document.getElementById('intensitySlider');
+        const dispersionSlider = document.getElementById('dispersionSlider');
+        const resetBtn = document.getElementById('resetLight');
+
+        // სინათლისა და წვეთის საწყისი კოორდინატები
+        let light = { x: 80, y: 115 };
+        let droplet = { x: 280, y: 115, r: 40 };
+        let isDragging = false;
+
+        const wavelengths = [700, 620, 580, 540, 490, 440, 400];
+        const colors = ['#ef4444', '#f97316', '#facc15', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6'];
+
+        function drawScene() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // ფონი - რბილი გრადიენტი
+            ctx.fillStyle = '#090d16';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // წვიმის წვეთი / პრიზმა
+            ctx.beginPath();
+            ctx.arc(droplet.x, droplet.y, droplet.r, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // სინათლის წყარო
+            ctx.beginPath();
+            ctx.arc(light.x, light.y, 8, 0, Math.PI * 2);
+            ctx.fillStyle = '#f8fafc';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#fff';
+            ctx.fill();
+            ctx.shadowBlur = 0; // რესეტი
+
+            // სინათლის სხივი წვეთამდე
+            ctx.beginPath();
+            ctx.moveTo(light.x, light.y);
+            ctx.lineTo(droplet.x, droplet.y);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // დისპერსიის გამოთვლა და დახატვა
+            const intensity = parseFloat(intensitySlider.value);
+            const dispersion = parseFloat(dispersionSlider.value);
+
+            wavelengths.forEach((wl, idx) => {
+                const color = colors[idx];
+                const shift = (idx - (wavelengths.length / 2)) * dispersion * 1.5;
+
+                // გამომავალი სხივების იმიტაცია (გარდატეხის ეფექტი)
+                ctx.beginPath();
+                ctx.moveTo(droplet.x, droplet.y);
+                
+                // ტრაექტორიის წერტილები
+                const midX = droplet.x + droplet.r * 0.8;
+                const midY = droplet.y + shift * 0.5;
+                const endX = canvas.width - 40;
+                const endY = droplet.y + shift * 4;
+
+                ctx.quadraticCurveTo(midX, midY, endX, endY);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 4 * intensity;
+                ctx.globalAlpha = 0.8;
+                ctx.stroke();
+            });
+            ctx.globalAlpha = 1.0; // რესეტი
+
+            // ტექსტური მინიშნება
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.font = '11px sans-serif';
+            ctx.fillText('← გადაათრიე სინათლის წყარო მაუსით', 15, canvas.height - 15);
+        }
+
+        // მაუსით გადათრევის ლოგიკა
+        function getMousePos(evt) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (evt.clientX - rect.left) * (canvas.width / rect.width),
+                y: (evt.clientY - rect.top) * (canvas.height / rect.height)
+            };
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            const pos = getMousePos(e);
+            const dist = Math.hypot(pos.x - light.x, pos.y - light.y);
+            if (dist < 20) {
+                isDragging = true;
+            }
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const pos = getMousePos(e);
+                // არ მივცეთ უფლება გასცდეს მარცხენა სამუშაო ზონას
+                light.x = Math.max(20, Math.min(droplet.x - 40, pos.x));
+                light.y = Math.max(20, Math.min(canvas.height - 20, pos.y));
+                drawScene();
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // თაჩ-სქრინის მხარდაჭერა ტელეფონებისთვის
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 0) {
+                const pos = getMousePos(e.touches[0]);
+                const dist = Math.hypot(pos.x - light.x, pos.y - light.y);
+                if (dist < 30) isDragging = true;
+            }
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length > 0) {
+                const pos = getMousePos(e.touches[0]);
+                light.x = Math.max(20, Math.min(droplet.x - 40, pos.x));
+                light.y = Math.max(20, Math.min(canvas.height - 20, pos.y));
+                drawScene();
+            }
+        });
+
+        canvas.addEventListener('touchend', () => { isDragging = false; });
+
+        // კონტროლერების ცვლილება
+        intensitySlider.addEventListener('input', drawScene);
+        dispersionSlider.addEventListener('input', drawScene);
+
+        resetBtn.addEventListener('click', () => {
+            light = { x: 80, y: 115 };
+            intensitySlider.value = 1.2;
+            dispersionSlider.value = 1.3;
+            drawScene();
+        });
+
+        // საწყისი გაშვება
+        drawScene();
+    </script>
+</body>
+</html>

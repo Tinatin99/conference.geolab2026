@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ომის კანონი და წრედების შეერთება</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --accent-blue: #38bdf8;
+            --accent-yellow: #f59e0b;
+            --accent-green: #10b981;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --editor-bg: #0b0f19;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* სლაიდის ჩარჩო (16:9 იმიტაცია) */
+        .slide-container {
+            width: 100%;
+            max-width: 1280px;
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ჰედერი */
+        .slide-header {
+            padding: 20px 35px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .slide-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #38bdf8, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .slide-tag {
+            font-size: 0.8rem;
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* სამუშაო სივრცე */
+        .slide-body {
+            display: grid;
+            grid-template-columns: 1fr 1.15fr;
+            gap: 25px;
+            padding: 30px;
+        }
+
+        /* მარცხნივ: კოდი */
+        .code-section {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--editor-bg);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        .editor-header {
+            background-color: #131c2e;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .window-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .dot-r { background-color: #ef4444; }
+        .dot-y { background-color: #eab308; }
+        .dot-g { background-color: #22c55e; }
+
+        .file-name {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .code-area {
+            padding: 20px;
+            font-family: 'Fira Code', 'Courier New', Courier, monospace;
+            font-size: 0.78rem;
+            line-height: 1.45;
+            color: #e2e8f0;
+            overflow-y: auto;
+            max-height: 480px;
+        }
+
+        .keyword { color: #f472b6; font-weight: bold; }
+        .type { color: #38bdf8; }
+        .function { color: #fbbf24; }
+        .number { color: #fb7185; }
+        .comment { color: #64748b; font-style: italic; }
+
+        /* მარჯვნივ: სიმულატორი */
+        .simulator-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        canvas {
+            background: #090d16;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: block;
+            width: 100%;
+        }
+
+        /* მართვის ინტერფეისი */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            background: rgba(0,0,0,0.25);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        label span {
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        input[type="range"], select {
+            width: 100%;
+            background: #1e293b;
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            padding: 5px;
+            font-size: 0.8rem;
+        }
+
+        /* გამოთვლის მეტრიკები */
+        .metrics-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            text-align: center;
+        }
+
+        .metric-box {
+            background: rgba(56, 189, 248, 0.05);
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .metric-box div:first-child {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .metric-box div:last-child {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-yellow);
+            margin-top: 2px;
+        }
+
+        /* სლაიდის ფუტერი */
+        .slide-footer {
+            padding: 15px 35px;
+            background-color: rgba(15, 23, 42, 0.6);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 950px) {
+            .slide-body {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container">
+        
+        <!-- სათაური -->
+        <div class="slide-header">
+            <div>
+                <h1>ომის კანონი, გეომეტრიული წინაღობა და წრედები</h1>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">მიმდევრობითი და პარალელური შეერთება, სადენის განივკვეთი და მოცულობა</p>
+            </div>
+            <div class="slide-tag">სლაიდი 11 / 13</div>
+        </div>
+
+        <!-- შინაარსი -->
+        <div class="slide-body">
+            
+            <!-- მარცხნივ: კოდი -->
+            <div class="code-section">
+                <div class="editor-header">
+                    <div class="window-dots">
+                        <div class="dot dot-r"></div>
+                        <div class="dot dot-y"></div>
+                        <div class="dot dot-g"></div>
+                    </div>
+                    <div class="file-name">ohms_law_circuits.ino</div>
+                </div>
+                <div class="code-area">
+<span class="keyword">const float</span> RHO = <span class="number">1.72e-8</span>; <span class="comment">// სპილენძის კუთრი წინაღობა (Ohm*m)</span>
+
+<span class="type">float</span> <span class="function">calculateResistance</span>(<span class="type">float</span> L, <span class="type">float</span> A) {
+  <span class="comment">// წინაღობა: R = ρ * (L / A)</span>
+  <span class="keyword">return</span> RHO * (L / A);
+}
+
+<span class="type">float</span> <span class="function">getCircuitCurrent</span>(<span class="type">float</span> V, <span class="type">float</span> R1, <span class="type">float</span> R2, <span class="type">bool</span> isParallel) {
+  <span class="type">float</span> totalR = <span class="number">0.0</span>;
+  <span class="keyword">if</span> (isParallel) {
+    <span class="comment">// პარალელური ჩართვა: 1/R_total = 1/R1 + 1/R2</span>
+    totalR = (R1 * R2) / (R1 + R2);
+  } <span class="keyword">else</span> {
+    <span class="comment">// მიმდევრობითი ჩართვა: R_total = R1 + R2</span>
+    totalR = R1 + R2;
+  }
+  <span class="comment">// ომის კანონი: I = V / R</span>
+  <span class="keyword">return</span> V / totalR;
+}
+
+<span class="type">void</span> <span class="function">loop</span>() {
+  <span class="type">float</span> R1 = <span class="function">calculateResistance</span>(<span class="number">2.0</span>, <span class="number">0.5e-6</span>); <span class="comment">// L=2მ, A=0.5მმ²</span>
+  <span class="type">float</span> current = <span class="function">getCircuitCurrent</span>(<span class="number">12.0</span>, R1, R1, <span class="type">false</span>);
+  <span class="function">Serial</span>.<span class="function">println</span>(current);
+}</div>
+            </div>
+
+            <!-- მარჯვნივ: ინტერაქტიული სიმულატორი -->
+            <div class="simulator-section">
+                <canvas id="circuitCanvas" width="540" height="230"></canvas>
+
+                <!-- ინფორმაციული პანელი -->
+                <div class="metrics-bar">
+                    <div class="metric-box">
+                        <div>ჯამური წინაღობა</div>
+                        <div id="resVal">0.00 Ω</div>
+                    </div>
+                    <div class="metric-box">
+                        <div>დენის ძალა</div>
+                        <div id="ampVal">0.00 A</div>
+                    </div>
+                    <div class="metric-box">
+                        <div>სადენის მოცულობა</div>
+                        <div id="volVal">0.00 მმ³</div>
+                    </div>
+                </div>
+
+                <!-- კონტროლერები -->
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label>შეერთების ტიპი</label>
+                        <select id="circuitType">
+                            <option value="series">მიმდევრობითი (Series)</option>
+                            <option value="parallel">პარალელური (Parallel)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>წყაროს ძაბვა (V): <span id="vLabel">9V</span></label>
+                        <input id="voltageSlider" type="range" min="3" max="24" step="1" value="9">
+                    </div>
+
+                    <div class="control-group">
+                        <label>სადენის სიგრძე (L): <span id="lLabel">1.5მ</span></label>
+                        <input id="lengthSlider" type="range" min="0.5" max="4.0" step="0.1" value="1.5">
+                    </div>
+
+                    <div class="control-group">
+                        <label>განივკვეთი (A): <span id="aLabel">0.5მმ²</span></label>
+                        <input id="areaSlider" type="range" min="0.1" max="2.0" step="0.1" value="0.5">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ფუტერი -->
+        <div class="slide-footer">
+            <span>ავტორი: თინათინ დავითაძე[cite: 2]</span>
+            <span>STEM ლაბორატორია — ომის კანონი პრაქტიკაში[cite: 2]</span>
+        </div>
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById('circuitCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // კონტროლერები
+        const circuitType = document.getElementById('circuitType');
+        const voltageSlider = document.getElementById('voltageSlider');
+        const lengthSlider = document.getElementById('lengthSlider');
+        const areaSlider = document.getElementById('areaSlider');
+
+        // ლეიბლები
+        const vLabel = document.getElementById('vLabel');
+        const lLabel = document.getElementById('lLabel');
+        const aLabel = document.getElementById('aLabel');
+
+        // მეტრიკები
+        const resVal = document.getElementById('resVal');
+        const ampVal = document.getElementById('ampVal');
+        const volVal = document.getElementById('volVal');
+
+        // ანიმაციის პარამეტრები
+        let electronPos = 0;
+
+        function drawScene() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const isParallel = circuitType.value === 'parallel';
+            const V = parseFloat(voltageSlider.value);
+            const L = parseFloat(lengthSlider.value);
+            const A = parseFloat(areaSlider.value); // განივკვეთი მმ²-ში
+
+            // განახლება ტექსტების
+            vLabel.innerText = V + 'V';
+            lLabel.innerText = L.toFixed(1) + 'მ';
+            aLabel.innerText = A.toFixed(1) + 'მმ²';
+
+            // მოცულობის გამოთვლა (V_volume = A * L)
+            const volume = A * (L * 1000); // მოცულობა კუბურ მილიმეტრებში
+            volVal.innerText = volume.toFixed(0) + ' მმ³';
+
+            // წინაღობის გამოთვლა (სასწავლო მასშტაბით, რათა ეკრანზე რეალური ცვლილება გამოჩნდეს)
+            // რეალურ სპილენძს აქვს ძალიან მცირე წინაღობა, ამიტომ გამოვიყენოთ სასწავლო კოეფიციენტი
+            const kRes = 8.0; 
+            const R1 = kRes * (L / A);
+            const R2 = R1; // სიმარტივისთვის ორივე რეზისტორი ტოლია
+
+            let totalR = 0;
+            if (isParallel) {
+                totalR = (R1 * R2) / (R1 + R2);
+            } else {
+                totalR = R1 + R2;
+            }
+
+            const current = V / totalR;
+
+            resVal.innerText = totalR.toFixed(1) + ' Ω';
+            ampVal.innerText = current.toFixed(2) + ' A';
+
+            // სადენების ხაზვა
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 6;
+            ctx.lineJoin = 'round';
+
+            // ძირითადი კვების წყარო (მარცხნივ)
+            const batX = 60, batY = 115;
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(batX - 15, batY - 25, 30, 50);
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.fillText(V + 'V', batX - 10, batY + 4);
+
+            // წრედის ტრაექტორიის განსაზღვრა
+            ctx.beginPath();
+            if (!isParallel) {
+                // მიმდევრობითი წრედი
+                ctx.moveTo(batX, batY - 25);
+                ctx.lineTo(batX, 40);
+                ctx.lineTo(480, 40);
+                ctx.lineTo(480, 190);
+                ctx.lineTo(batX, 190);
+                ctx.lineTo(batX, batY + 25);
+                ctx.stroke();
+
+                // ორი რეზისტორი (მიმდევრობითი)
+                drawResistor(200, 40, R1.toFixed(1) + ' Ω');
+                drawResistor(360, 40, R2.toFixed(1) + ' Ω');
+            } else {
+                // პარალელური წრედი
+                ctx.moveTo(batX, batY - 25);
+                ctx.lineTo(batX, 40);
+                ctx.lineTo(480, 40);
+                ctx.lineTo(480, 190);
+                ctx.lineTo(batX, 190);
+                ctx.lineTo(batX, batY + 25);
+                ctx.stroke();
+
+                // განშტოების სადენები
+                ctx.beginPath();
+                ctx.moveTo(220, 40);
+                ctx.lineTo(220, 190);
+                ctx.moveTo(380, 40);
+                ctx.lineTo(380, 190);
+                ctx.stroke();
+
+                // ორი რეზისტორი (პარალელური)
+                drawResistor(220, 115, R1.toFixed(1) + ' Ω', true);
+                drawResistor(380, 115, R2.toFixed(1) + ' Ω', true);
+            }
+
+            // ელექტრონების ანიმაცია (სიჩქარე პროპორციულია დენის ძალის)
+            electronPos += current * 0.05;
+            if (electronPos > 100) electronPos = 0;
+
+            drawElectrons(isParallel, current);
+        }
+
+        function drawResistor(x, y, text, vertical = false) {
+            ctx.save();
+            ctx.fillStyle = '#f59e0b';
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1.5;
+
+            if (!vertical) {
+                ctx.fillRect(x - 25, y - 12, 50, 24);
+                ctx.strokeRect(x - 25, y - 12, 50, 24);
+                ctx.fillStyle = '#0f172a';
+                ctx.font = '10px sans-serif';
+                ctx.fillText(text, x - 18, y + 4);
+            } else {
+                ctx.fillRect(x - 12, y - 25, 24, 50);
+                ctx.strokeRect(x - 12, y - 25, 24, 50);
+                ctx.fillStyle = '#0f172a';
+                ctx.font = '10px sans-serif';
+                ctx.fillText(text, x - 18, y + 4);
+            }
+            ctx.restore();
+        }
+
+        function drawElectrons(isParallel, current) {
+            ctx.fillStyle = '#38bdf8';
+            ctx.shadowBlur = 6;
+            ctx.shadowColor = '#38bdf8';
+
+            // ელექტრონების რაოდენობა და განლაგება
+            const numElectrons = 15;
+            for (let i = 0; i < numElectrons; i++) {
+                let offset = (i / numElectrons) * 100;
+                let progress = (electronPos + offset) % 100;
+
+                // მარტივი კოორდინატების გამოთვლა ტრაექტორიის გასწვრივ
+                let x = 60;
+                let y = 40;
+
+                if (progress < 25) {
+                    // ზედა ხაზი მარჯვნივ
+                    x = 60 + (progress / 25) * 420;
+                    y = 40;
+                } else if (progress < 50) {
+                    // ჩამოსვლა მარჯვნივ
+                    x = 480;
+                    y = 40 + ((progress - 25) / 25) * 150;
+                } else if (progress < 75) {
+                    // ქვედა ხაზი მარცხნივ
+                    x = 480 - ((progress - 50) / 25) * 420;
+                    y = 190;
+                } else {
+                    // ასვლა მარცხნივ
+                    x = 60;
+                    y = 190 - ((progress - 75) / 25) * 150;
+                }
+
+                // თუ პარალელურია, ელექტრონები განაწილდება განშტოებებშიც
+                if (isParallel && x > 220 && x < 380 && y === 40) {
+                    if (i % 2 === 0) {
+                        x = 220;
+                        y = 40 + ((progress - 25) / 25) * 150;
+                    }
+                }
+
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.shadowBlur = 0;
+        }
+
+        // ანიმაციის ციკლი
+        function animate() {
+            drawScene();
+            requestAnimationFrame(animate);
+        }
+
+        // მოვლენების მიმყოლები
+        [circuitType, voltageSlider, lengthSlider, areaSlider].forEach(el => {
+            el.addEventListener('input', drawScene);
+        });
+
+        // სტარტი
+        animate();
+    </script>
+</body>
+</html>

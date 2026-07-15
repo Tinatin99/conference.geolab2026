@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>პორტფოლიო: Arduino & STEM სწავლება</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --accent-blue: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-pink: #f472b6;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --editor-bg: #0b0f19;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            padding: 30px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* სლაიდის პორტფოლიო ჩარჩო (16:9 ასპექტით) */
+        .slide-container {
+            width: 100%;
+            max-width: 1200px;
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* სლაიდის ჰედერი */
+        .slide-header {
+            padding: 24px 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .slide-header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .slide-tag {
+            font-size: 0.8rem;
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent-blue);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* ძირითადი სამუშაო არე - ორსვეტიანი განლაგება */
+        .slide-body {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 30px;
+            padding: 40px;
+            align-items: stretch;
+        }
+
+        /* მარცხენა მხარე: კოდის რედაქტორი (Arduino IDE სტილში) */
+        .code-section {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--editor-bg);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        .editor-header {
+            background-color: #131c2e;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .window-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .dot-r { background-color: #ef4444; }
+        .dot-y { background-color: #eab308; }
+        .dot-g { background-color: #22c55e; }
+
+        .file-name {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .code-area {
+            padding: 24px;
+            font-family: 'Fira Code', 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #e2e8f0;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        /* სინტაქსის გაფერადება */
+        .keyword { color: #f472b6; font-weight: bold; }
+        .type { color: #38bdf8; }
+        .function { color: #fbbf24; }
+        .number { color: #fb7185; }
+        .comment { color: #64748b; font-style: italic; }
+
+        /* მარჯვენა მხარე: ინტერაქტიული სიმულატორი და ექსპერიმენტი */
+        .simulator-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Arduino და Breadboard ვიზუალიზაცია */
+        .hardware-container {
+            width: 100%;
+            background-color: #151f32;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+        }
+
+        /* ეკრანის ვიზუალი */
+        .lcd-screen {
+            background-color: #042f1a;
+            border: 4px solid #0f172a;
+            border-radius: 6px;
+            width: 100%;
+            max-width: 280px;
+            height: 64px;
+            padding: 10px 16px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #4ade80;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .lcd-line {
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            text-shadow: 0 0 4px rgba(74, 222, 128, 0.6);
+        }
+
+        /* მაკეტური დაფა და დიოდი */
+        .breadboard-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            background-color: #e2e8f0;
+            padding: 15px 30px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 280px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+        }
+
+        .led-light {
+            width: 24px;
+            height: 24px;
+            background-color: #475569;
+            border-radius: 50%;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.2);
+            transition: all 0.2s ease;
+        }
+
+        .led-light.active {
+            background-color: #ef4444;
+            box-shadow: 0 0 20px #ef4444, 0 0 8px #ef4444;
+        }
+
+        .breadboard-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+        }
+
+        .grid-hole {
+            width: 8px;
+            height: 8px;
+            background-color: #475569;
+            border-radius: 50%;
+        }
+
+        /* მართვის ინტერფეისი ქვემოთ */
+        .control-block {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(to right, #38bdf8, #2563eb);
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* სლაიდის ფუტერი */
+        .slide-footer {
+            padding: 20px 40px;
+            background-color: rgba(15, 23, 42, 0.6);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 900px) {
+            .slide-body {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container">
+        
+        <!-- ზედა სათაური პორტფოლიოსთვის -->
+        <div class="slide-header">
+            <div>
+                <h1>პორტფოლიო: Arduino დაპროგრამება კლასში</h1>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 4px;">ინოვაციური STEM პრაქტიკა: კოდიდან — რეალურ მოქმედებამდე</p>
+            </div>
+            <div class="slide-tag">სლაიდი 7 / 13</div>
+        </div>
+
+        <!-- ძირითადი კონტენტი (გვერდიგვერდ) -->
+        <div class="slide-body">
+            
+            <!-- მარცხნივ: კოდის რედაქტორი -->
+            <div class="code-section">
+                <div class="editor-header">
+                    <div class="window-dots">
+                        <div class="dot dot-r"></div>
+                        <div class="dot dot-y"></div>
+                        <div class="dot dot-g"></div>
+                    </div>
+                    <div class="file-name">blink_with_display.ino</div>
+                </div>
+                <div class="code-area">
+<span class="keyword">#include</span> <span class="type">&lt;LiquidCrystal_I2C.h&gt;</span>
+
+<span class="type">LiquidCrystal_I2C</span> <span class="function">lcd</span>(<span class="number">0x27</span>, <span class="number">16</span>, <span class="number">2</span>);
+<span class="keyword">const int</span> ledPin = <span class="number">13</span>;
+
+<span class="type">void</span> <span class="function">setup</span>() {
+  <span class="function">pinMode</span>(ledPin, <span class="type">OUTPUT</span>);
+  lcd.<span class="function">init</span>();
+  lcd.<span class="function">backlight</span>();
+  lcd.<span class="function">setCursor</span>(<span class="number">0</span>, <span class="number">0</span>);
+  lcd.<span class="function">print</span>(<span class="comment">"Wokwi Simulator!"</span>);
+}
+
+<span class="type">void</span> <span class="function">loop</span>() {
+  <span class="function">digitalWrite</span>(ledPin, <span class="type">HIGH</span>); <span class="comment">// LED ჩართვა</span>
+  lcd.<span class="function">setCursor</span>(<span class="number">0</span>, <span class="number">1</span>);
+  lcd.<span class="function">print</span>(<span class="comment">"LED Status: ON "</span>);
+  <span class="function">delay</span>(<span class="number">1000</span>);
+
+  <span class="function">digitalWrite</span>(ledPin, <span class="type">LOW</span>);  <span class="comment">// LED გამორთვა</span>
+  lcd.<span class="function">setCursor</span>(<span class="number">0</span>, <span class="number">1</span>);
+  lcd.<span class="function">print</span>(<span class="comment">"LED Status: OFF"</span>);
+  <span class="function">delay</span>(<span class="number">1000</span>);
+}</div>
+            </div>
+
+            <!-- მარჯვნივ: ინტერაქტიული აპარატურა (Wokwi-ს ვიზუალიზაცია) -->
+            <div class="simulator-section">
+                
+                <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--accent-blue);">ინტერაქტიული აპარატურა (Wokwi იმიტაცია)</h3>
+
+                <div class="hardware-container">
+                    <!-- LCD ეკრანი -->
+                    <div class="lcd-screen">
+                        <div class="lcd-line" id="lcdLine1">Arduino Active...</div>
+                        <div class="lcd-line" id="lcdLine2" style="color: #60a5fa;">სისტემა მზად არის</div>
+                    </div>
+
+                    <!-- მაკეტური დაფა და დიოდი -->
+                    <div class="breadboard-area">
+                        <div class="led-light" id="hardwareLed"></div>
+                        <div class="breadboard-grid">
+                            <div class="grid-hole"></div>
+                            <div class="grid-hole"></div>
+                            <div class="grid-hole"></div>
+                            <div class="grid-hole"></div>
+                            <div class="grid-hole"></div>
+                            <div class="grid-hole"></div>
+                            <div class="grid-hole"></div>
+                            <div class="grid-hole"></div>
+                            <div class="grid-hole"></div>
+                            <div class="grid-hole"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- მართვის ბლოკი -->
+                <div class="control-block">
+                    <button class="action-btn" id="runSimulationBtn">⚡ კოდის გაშვება / სიმულაცია</button>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- სლაიდის ქვედა პანელი (ავტორი და პროექტი) -->
+        <div class="slide-footer">
+            <span>ავტორი: თინათინ დავითაძე[cite: 2, 4]</span>
+            <span>STEM განათლების საერთაშორისო სტანდარტი</span>
+        </div>
+
+    </div>
+
+    <script>
+        const simBtn = document.getElementById('runSimulationBtn');
+        const led = document.getElementById('hardwareLed');
+        const line1 = document.getElementById('lcdLine1');
+        const line2 = document.getElementById('lcdLine2');
+
+        let isRunning = false;
+        let blinkInterval = null;
+
+        simBtn.addEventListener('click', () => {
+            if (!isRunning) {
+                // სიმულაციის დაწყება
+                isRunning = true;
+                simBtn.innerText = "🛑 სიმულაციის გაჩერება";
+                simBtn.style.background = "linear-gradient(to right, #ef4444, #b91c1c)";
+                
+                line1.innerText = "Wokwi Simulator!";
+                
+                let ledOn = false;
+                blinkInterval = setInterval(() => {
+                    ledOn = !ledOn;
+                    if (ledOn) {
+                        led.classList.add('active');
+                        line2.innerText = "LED Status: ON ";
+                        line2.style.color = "#4ade80";
+                    } else {
+                        led.classList.remove('active');
+                        line2.innerText = "LED Status: OFF";
+                        line2.style.color = "#f87171";
+                    }
+                }, 1000);
+            } else {
+                // სიმულაციის გაჩერება
+                isRunning = false;
+                clearInterval(blinkInterval);
+                led.classList.remove('active');
+                simBtn.innerText = "⚡ კოდის გაშვება / სიმულაცია";
+                simBtn.style.background = "linear-gradient(to right, #38bdf8, #2563eb)";
+                
+                line1.innerText = "Arduino Active...";
+                line2.innerText = "სისტემა მზად არის";
+                line2.style.color = "#60a5fa";
+            }
+        });
+    </script>
+</body>
+</html>

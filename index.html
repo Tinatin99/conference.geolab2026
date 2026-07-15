@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ზღაპრიდან რობოტიკამდე - თინათინი</title>
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #198754;
+            --dark-color: #212529;
+            --light-bg: #f8f9fa;
+            --card-shadow: 0 15px 35px rgba(0,0,0,0.08);
+            --transition-speed: 0.4s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef2f5;
+            color: var(--dark-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        .presentation-container {
+            width: 100%;
+            max-width: 1100px;
+            position: relative;
+        }
+
+        .slide {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            padding: 40px;
+            min-height: 650px;
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            border-left: 10px solid var(--primary-color);
+            transition: opacity var(--transition-speed) ease;
+            opacity: 0;
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 32px;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.7;
+            color: #495057;
+            margin-bottom: 15px;
+        }
+
+        ul {
+            list-style-type: none;
+            margin-bottom: 15px;
+        }
+
+        li {
+            font-size: 17px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        li::before {
+            content: "⚡";
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+        }
+
+        .badge {
+            background: #e7f1ff;
+            color: var(--primary-color);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: bold;
+            align-self: flex-start;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #dee2e6;
+            padding-top: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        /* ინტერაქტიული სიმულატორების ზონა */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 1fr 120px 1fr;
+            gap: 20px;
+            margin-top: 15px;
+            align-items: center;
+        }
+
+        @media (max-width: 900px) {
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
+            .vs-arrow {
+                transform: rotate(90deg);
+                margin: 10px auto;
+            }
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            max-height: 320px;
+        }
+
+        .vs-arrow {
+            text-align: center;
+            font-size: 32px;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .simulator-card {
+            background: #f1f3f5;
+            border: 2px solid #dee2e6;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        /* ვირტუალური მიკრობიტი */
+        .microbit-board {
+            width: 200px;
+            height: 180px;
+            background: #1a1a1a;
+            border-radius: 12px;
+            position: relative;
+            padding: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .microbit-btn {
+            width: 30px;
+            height: 30px;
+            background: #333;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            color: white;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .microbit-btn:active {
+            background: #555;
+        }
+
+        .led-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            width: 110px;
+            margin: 0 auto;
+        }
+
+        .led {
+            width: 14px;
+            height: 14px;
+            background: #3a1010;
+            border-radius: 2px;
+            transition: background 0.1s;
+        }
+
+        .led.active {
+            background: #ff2a2a;
+            box-shadow: 0 0 8px #ff2a2a;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #0b5ed7;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5c636a;
+        }
+
+        /* 3-რეზოლუციიანი მედია რეზოლუციები */
+        @media (min-width: 1400px) {
+            .presentation-container { max-width: 1300px; }
+            .slide { min-height: 750px; padding: 50px; }
+            h1 { font-size: 38px; }
+            p, li { font-size: 20px; }
+        }
+
+        @media (max-width: 1024px) {
+            .slide { min-height: 600px; padding: 30px; }
+            h1 { font-size: 26px; }
+            p, li { font-size: 16px; }
+        }
+
+        @media (max-width: 767px) {
+            body { padding: 10px; }
+            .slide { padding: 20px; min-height: auto; }
+            h1 { font-size: 22px; }
+            p, li { font-size: 14px; }
+            .controls { flex-direction: column; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="presentation-container">
+
+    <!-- სლაიდი 1: სატიტულო -->
+    <div class="slide active">
+        <span class="badge">სკოლა ანაბასისი</span>
+        <div>
+            <h1 style="font-size: 40px; margin-bottom: 15px;">ზღაპრიდან რობოტიკამდე</h1>
+            <p style="font-size: 22px; color: #555;">კომპიუტერული აზროვნების განვითარება კლასში</p>
+            <p style="margin-top: 40px; font-weight: bold; color: var(--primary-color);">მომხსენებელი: თინათინი, მათემატიკის უფროსი მასწავლებელი</p>
+        </div>
+        <div class="footer">
+            <span>23-24 ივლისი, 2026 წელი</span>
+            <span>სლაიდი 1/15</span>
+        </div>
+    </div>
+
+    <!-- სლაიდი 2: სამოქმედო გეგმა -->
+    <div class="slide">
+        <span class="badge">სამოქმედო გეგმა</span>
+        <div>
+            <h1>ჩვენი დღევანდელი მეგზური</h1>
+            <ul>
+                <li><strong>I-IV კლასები:</strong> უეკრანო კოდირება („გამარჯობა რუბი“)</li>
+                <li><strong>V-VI კლასები:</strong> Micro:bit-ის ჯადოსნური სამყარო და დავალებები</li>
+                <li><strong>უფროსი საფეხური:</strong> ფიზიკური რობოტიკა Arduino-თი</li>
+                <li><strong>საგნობრივი ინტეგრაცია:</strong> ICT და მათემატიკა ერთად</li>
+                <li><strong>პრაქტიკული ქეისები:</strong> ფესტივალები, BTU და „ფიზტერია“</li>
+            </ul>
+        </div>
+        <div class="footer">
+            <span>გეგმა</span>
+            <span>სლაიდი 2/15</span>
+        </div>
+    </div>
+
+    <!-- სლაიდი 3: უეკრანო სწავლება -->
+    <div class="slide">
+        <span class="badge">დაწყებითი საფეხური</span>
+        <div>
+            <h1>რატომ „უეკრანო სწავლება“ (Unplugged)?</h1>
+            <p>კომპიუტერული აზროვნება ეკრანის გარეშე. ჩვენს პატარებთან ვახდენთ:</p>
+            <ul>
+                <li>ალგორითმული (ნაბიჯ-ნაბიჯ) ფიქრის ჩამოყალიბებას.</li>
+                <li>რთული ლოგიკური ამოცანების მარტივად გააზრებას თამაშით.</li>
+                <li>კომპიუტერული ცნებების ფიზიკურ დონეზე შეგრძნებას.</li>
+            </ul>
+        </div>
+        <div class="footer">
+            <span>მეთოდოლოგია</span>
+            <span>სლაიდი 3/15</span>
+        </div>
+    </div>
+
+    <!-- სლაიდი 4: გამარჯობა რუბი -->
+    <div class="slide">
+        <span class="badge">თამაშით სწავლება</span>
+        <div>
+            <h1>ლინდა ლიუკასი და „გამარჯობა რუბი“</h1>
+            <p>საგანმანათლებლო მეთოდოლოგია პრაქტიკაში:</p>
+            <ul>
+                <li>ზღაპრის გმირებით ვხსნით მარყუჟებს, ცვლადებსა და პირობით ოპერატორებს.</li>
+                <li><strong>აქტივობა:</strong> „რობოტის რეცეპტები“ - ერთმანეთისთვის კოდის წერა ფურცელზე.</li>
+            </ul>
+        </div>
+        <div class="footer">
+            <span>I-IV კლასები</span>
+            <span>სლაიდი 4/15</span>
+        </div>
+    </div>
+
+    <!-- სლაიდი 5: Micro:bit დავალება 1 (LED პიქსელები) -->
+    <div class="slide">
+        <span class="badge">დავალება 1: პიქსელების ანიმაცია</span>
+        <div>
+            <h1>კოორდინატების მართვა LED ბადეზე</h1>
+            <p>მოსწავლეები სწავლობენ X და Y კოორდინატებს (0-დან 4-მდე) და ქმნიან საკუთარ მოციმციმე გმირებს plot/toggle ბლოკებით.</p>
+        </div>
+        <div class="workspace-grid">
+            <div class="code-block">
+// JavaScript (MakeCode)
+basic.forever(function () {
+    led.toggle(0, 4)
+    led.toggle(4, 4)
+    led.toggle(0, 2)
+    led.toggle(4, 2)
+    basic.pause(1000)
+})
+            </div>
+            <div class="vs-arrow">➡️</div>
+            <div class="simulator-card">
+                <div class="microbit-board">
+                    <div style="display: flex; justify-content: space-between;">
+                        <div class="microbit-btn">A</div>
+                        <div class="microbit-btn">B</div>
+                    </div>
+                    <div class="led-grid" id="grid1">
+                        <!-- 5x5 LED-ები -->
+                        <div class="led"></div><div class="led active"></div><div class="led"></div><div class="led active"></div><div class="led"></div>
+                        <div class="led"></div><div class="led"></div><div class="led active"></div><div class="led"></div><div class="led"></div>
+                        <div class="led" id="t1"></div><div class="led"></div><div class="led"></div><div class="led"></div><div class="led" id="t2"></div>
+                        <div class="led"></div><div class="led active"></div><div class="led active"></div><div class="led active"></div><div class="led"></div>
+                        <div class="led" id="t3"></div><div class="led"></div><div class="led"></div><div class="led"></div><div class="led" id="t4"></div>
+                    </div>
+                    <div style="text-align: center; color: #555; font-size: 10px;">Micro:bit Simulator</div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <span>ვიზუალური პროგრამირება</span>
+            <span>სლაიდი 5/15</span>
+        </div>
+    </div>
+
+    <!-- სლაიდი 6: Micro:bit დავალება 2 (კომპასი) -->
+    <div class="slide">
+        <span class="badge">დავალება 2: ციფრული კომპასი</span>
+        <div>
+            <h1>ლოგიკური პირობები (If-Else)</h1>
+            <p>მოსწავლეები აპროგრამებენ მიმართულების მაჩვენებელს კომპასის გრადუსების მიხედვით (N, E, S, W).</p>
+        </div>
+        <div class="workspace-grid">
+            <div class="code-block">
+// კომპასის ლოგიკა JS-ში
+let degrees = input.compassHeading()
+if (degrees < 45 || degrees > 315) {
+    basic.showString("N")
+} else if (degrees < 135) {
+    basic.showString("E")
+} else if (degrees < 225) {
+    basic.showString("S")
+} else {
+    basic.showString("W")
+}
+            </div>
+            <div class="vs-arrow">➡️</div>
+            <div class="simulator-card">
+                <input type="range" id="compassSlider" min="0" max="360" value="0" style="width: 100%; margin-bottom: 10px;">
+                <p>გრადუსი: <span id="degVal">0</span>°</p>
+                <div class="microbit-board" style="height: 120px; width: 140px; justify-content: center; align-items: center;">
+                    <div id="compassDisplay" style="color: #ff2a2a; font-size: 48px; font-weight: bold; font-family: monospace;">N</div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <span>სენსორები</span>
+            <span>სლაიდი 6/15</span>
+        </div>
+    </div>
+
+    <!-- სლაიდი 7: Micro:bit დავალება 3 (მუსიკა) -->
+    <div class="slide">
+        <span class="badge">დავალება 3: მუსიკალური კოდირება</span>
+        <div>
+            <h1>ბგერების სიხშირე და ციკლები (Loops)</h1>
+            <p>მოსწავლეები სწავლობენ ნოტებს და ქმნიან საკუთარ პატარა მელოდიას ციკლების მეშვეობით.</p>
+        </div>
+        <div class="workspace-grid">
+            <div class="code-block">
+// მელოდიის სტრუქტურა
+music.setTempo(120)
+for (let i = 0; i < 2; i++) {
+    music.playTone(330, music.beat(BeatFraction.Whole)) // E
+    music.playTone(294, music.beat(BeatFraction.Whole)) // D
+    music.playTone(262, music.beat(BeatFraction.Whole)) // C
+}
+            </div>
+            <div class="vs-arrow">➡️</div>
+            <div class="simulator-card">
+                <button class="btn" onclick="playMelody()">🎵 მელოდიის დაკვრა</button>
+                <p style="margin-top: 10px; font-size: 14px; color: #666;" id="noteDisplay">დააჭირე დაკვრას</p>
+            </div>
+        </div>
+        <div class="footer">
+            <span>STEM & მუსიკა</span>
+            <span>სლაიდი 7/15</span>
+        </div>
+    </div>
+
+    <!-- სლაიდი 8: Micro:bit დავალება 4 (ინტერაქტიული მუსიკა) -->
+    <div class="slide">
+        <span class="badge">დავალება 4: ინტერაქტიული მუსიკა</span>
+        <div>
+            <h1>მოვლენებზე რეაგირება (Event Handlers)</h1>
+            <p>ღილაკზე თითის დაჭერით იწყება მელოდიის შესრულება. ბავშვები სწავლობენ, თუ როგორ რეაგირებს კომპიუტერი გარე იმპულსებზე.</p>
+        </div>
+        <div class="workspace-grid">
+            <div class="code-block">
+// ღილაკის მოვლენა
+input.onButtonPressed(Button.A, function () {
+    for (let i = 0; i < 3; i++) {
+        music.playTone(330, music.beat(BeatFraction.Whole))
+    }
+})
+            </div>
+            <div class="vs-arrow">➡️</div>
+            <div class="simulator-card">
+                <div class="microbit-board" style="width: 160px; height: 140px; justify-content: center; align-items: center;">
+                    <button class="microbit-btn" id="btnA" style="width: 50px; height: 50px;">A</button>
+                </div>
+                <p style="margin-top: 10px; font-size: 14px; color: #666;" id="interactiveMusicDisplay">დააჭირე ღილაკს A</p>
+            </div>
+        </div>
+        <div class="footer">
+            <span>ინტერაქტივი</span>
+            <span>სლაიდი 8/15</span>
+        </div>
+    </div>
+
+    <!-- სლაიდი 9: Arduino -->
+    <div class="slide">
+        <span class="badge">საინჟინრო უნარები</span>
+        <div>
+            <h1>უფრო დიდი გამოწვევა — Arduino!</h1>
+            <p>როცა ბავშვები მეტ გამოწვევას ითხოვენ, ვიწყებთ ნამდვილ ელექტრონიკას:</p>
+            <ul>
+                <li>სადენების, რეზისტორებისა და სხვადასხვა სენსორების ფიზიკური შეერთება.</li>
+                <li>ინჟინრული კრეატივის, მოტორიკისა და უსაფრთხოების წესების სწავლა.</li>
+            </ul>
+        </div>
+        <div class="footer">
+            <span>რობოტიკა</span>
+            <span>სლაიდი 9/15</span>
+        </div>
+    </div>
+
+    <!-- სლაიდი 10: სასკოლო შუქნიშანი -->
+    <div class="slide">
+        <span class="badge">პროექტი</span>
+        <div>
+            <h1>„სასკოლო შუქნიშანი“</h1>
+            <p>საგზაო უსაფრთხოების მოდელირება დაპროგრამებით:</p>
+            <ul>
+                <li>სამი ფერის LED ნათურის მართვა Arduino დაფიდან.</li>
+                <li>დროის ინტერვალებისა (Delay) და ციკლების სწორად გაწერა კოდში.</li>
+            </ul>
+        </div>
+        <div class="footer">
+            <span>Arduino პრაქტიკა</span>
+            <span>სლაიდი 10/15</span>
+        </div>
+    </div>
+
+    <!-- სლაიდი 11: საგნობრივი ინტეგრაცია -->
+    <div class="slide">
+        <span class="badge">ინტეგრირებული გაკვეთილები</span>
+        <div>
+            <h1>მათემატიკა მოძრაობაში!</h1>
+            <p>როგორ ვაერთიანებ ჩემს ორ უსაყვარლეს საგანს:</p>
+            <ul>
+                <li>გეომეტრიული ფიგურებისა და კუთხეების სწავლა რობოტის ტრაექტორიით.</li>
+                <li>კოორდინატთა სისტემის გააზრება გრაფიკული ობიექტების ამოძრავებით.</li>
+                <li>მათემატიკა აღარ არის მხოლოდ ფურცელზე — ის ხდება ცოცხალი!</li>
+            </ul>
+        </div>
+        <div class="footer">
+            <span>ICT + მათემატიკა</span>
+            <span>სლაიდი 11/15</span>
+        </div>
+    </div>
+
+    <!-- სლაიდი 12: დებაგინგი -->
+    <div class="slide">
+        <span class="badge">კრიტიკული აზროვნება</span>
+        <div>
+            <h1>დებაგინგი — შეცდომა, როგორც აღმოჩენა</h1>
+            <p>კოდირებაში ყველაზე მთავარი უნარია — არ შეგვეშინდეს შეცდომის:</p>
+            <ul>
+                <li>ბავშვებს ვასწავლით „ბაგების“ (შეცდომების) დამოუკიდებლად ძიებას.</li>
+                <li>შეცდომის პოვნა ხდება საინტერესო თავსატეხი და არა იმედგაცრუება.</li>
+            </ul>
+        </div>
+        <div class="footer">
+            <span>შეცდომების გასწორება</span>
+            <span>სლაიდი 12/15</span>
+        </div>
+    </div>
+
+    <!-- სლაიდი 13: შედეგები -->
+    <div class="slide">
+        <span class="badge">მიღწევები</span>
+        <div>
+            <h1>რას მივაღწიეთ კლასში?</h1>
+            <ul>
+                <li>მოსწავლეთა ჩართულობა და მოტივაცია გაიზარდა 100%-ით.</li>
+                <li>დავამსხვრიეთ მითი, რომ „ტექნოლოგიები რთულია“.</li>
+                <li>ბავშვები გახდნენ ტექნოლოგიების შემოქმედნი და არა მომხმარებლები.</li>
+            </ul>
+        </div>
+        <div class="footer">
+            <span>შედეგები</span>
+            <span>სლაიდი 13/15</span>
+        </div>
+    </div>
+
+    <!-- სლაიდი 14: ფესტივალები, BTU და ფიზტერია -->
+    <div class="slide" style="border-left-color: var(--secondary-color);">
+        <span class="badge" style="background: #e2fbe8; color: var(--secondary-color);">კლასგარეშე STEM აქტივობები</span>
+        <div>
+            <h1>2025-2026 წლის დიდი მიღწევები</h1>
+            <p>ჩვენი აქტიური მონაწილეობა საზოგადოებრივ და სამეცნიერო ცხოვრებაში:</p>
+            <ul>
+                <li><strong>ილიაუნის სამეცნიერო პიკნიკი & ფესტივალი:</strong> ჩემი მოსწავლეების პროექტების წარდგენა და ექსპერიმენტების ჩვენება.</li>
+                <li><strong>BTU Women Mentorship:</strong> 800 აპლიკანტიდან შერჩეული Front-End მიმართულების ბენეფიციარი.</li>
+                <li><strong>საავტორო პლატფორმა „ფიზტერია“:</strong> ჩემ მიერ შექმნილი ინტერაქტიული საიტი ფიზიკისა და მათემატიკის პოპულარიზაციისთვის!</li>
+            </ul>
+        </div>
+        <div class="footer">
+            <span>ფესტივალები & პროექტები</span>
+            <span>სლაიდი 14/15</span>
+        </div>
+    </div>
+
+    <!-- სლაიდი 15: დასასრული -->
+    <div class="slide" style="border-left-color: #28a745;">
+        <span class="badge" style="background: #e2fbe8; color: #28a745;">დასასრული</span>
+        <div>
+            <h1 style="color: #28a745; font-size: 38px;">გმადლობთ ყურადღებისთვის!</h1>
+            <p style="font-size: 20px; margin-top: 30px;">„ყველაზე დიდი გამარჯვება ბავშვის თვალებში ანთებული ინტერესია.“</p>
+            <p style="margin-top: 40px; font-weight: bold; color: #555;">საკონტაქტო ელ-ფოსტა: tinatin@anabasisi.edu.ge</p>
+        </div>
+        <div class="footer">
+            <span>კითხვა-პასუხის რეჟიმი</span>
+            <span>სლაიდი 15/15</span>
+        </div>
+    </div>
+
+</div>
+
+<!-- ნავიგაციის ღილაკები -->
+<div class="controls">
+    <button class="btn btn-secondary" onclick="prevSlide()">◀ წინა</button>
+    <button class="btn" onclick="nextSlide()">შემდეგი ▶</button>
+</div>
+
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+
+    function showSlide(index) {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (index + slides.length) % slides.length;
+        slides[currentSlide].classList.add('active');
+    }
+
+    function nextSlide() { showSlide(currentSlide + 1); }
+    function prevSlide() { showSlide(currentSlide - 1); }
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'ArrowRight') nextSlide();
+        else if (event.key === 'ArrowLeft') prevSlide();
+    });
+
+    // --- დავალება 1: პიქსელების ანიმაცია ---
+    setInterval(() => {
+        const leds = [document.getElementById('t1'), document.getElementById('t2'), document.getElementById('t3'), document.getElementById('t4')];
+        leds.forEach(led => {
+            if (led) led.classList.toggle('active');
+        });
+    }, 1000);
+
+    // --- დავალება 2: კომპასი ---
+    const slider = document.getElementById('compassSlider');
+    const degVal = document.getElementById('degVal');
+    const compassDisplay = document.getElementById('compassDisplay');
+
+    if (slider) {
+        slider.addEventListener('input', function() {
+            let deg = parseInt(this.value);
+            degVal.innerText = deg;
+            if (deg < 45 || deg > 315) compassDisplay.innerText = "N";
+            else if (deg < 135) compassDisplay.innerText = "E";
+            else if (deg < 225) compassDisplay.innerText = "S";
+            else compassDisplay.innerText = "W";
+        });
+    }
+
+    // --- დავალება 3: მუსიკა ---
+    let audioCtx = null;
+    function playTone(freq, duration) {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = freq;
+        osc.type = "sine";
+        osc.start();
+        setTimeout(() => osc.stop(), duration);
+    }
+
+    function playMelody() {
+        const notes = [330, 294, 262, 262, 294, 330, 330]; // E, D, C, C, D, E, E
+        const display = document.getElementById('noteDisplay');
+        notes.forEach((freq, index) => {
+            setTimeout(() => {
+                playTone(freq, 400);
+                display.innerText = `უკრავს სიხშირეს: ${freq}Hz`;
+                if (index === notes.length - 1) {
+                    setTimeout(() => display.innerText = "მელოდია დასრულდა 🎵", 500);
+                }
+            }, index * 500);
+        });
+    }
+
+    // --- დავალება 4: ინტერაქტიული მუსიკა ---
+    const btnA = document.getElementById('btnA');
+    if (btnA) {
+        btnA.addEventListener('click', () => {
+            const display = document.getElementById('interactiveMusicDisplay');
+            display.innerText = "ღილაკი A დაჭერილია! უკრავს ნოტებს...";
+            const notes = [330, 330, 330]; // E, E, E
+            notes.forEach((freq, index) => {
+                setTimeout(() => {
+                    playTone(freq, 300);
+                    if (index === notes.length - 1) {
+                        setTimeout(() => display.innerText = "მზად არის ახალი დაჭერისთვის 🎵", 400);
+                    }
+                }, index * 400);
+            });
+        });
+    }
+</script>
+
+</body>
+</html>

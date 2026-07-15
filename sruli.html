@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>თინათინ დავითაძე — ინტერაქტიული საპორტფოლიო ლაბორატორია</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --accent-blue: #38bdf8;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --accent-purple: #a855f7;
+            --accent-pink: #f472b6;
+            --accent-red: #ef4444;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --editor-bg: #0b0f19;
+            --primary-color: #0d6efd;
+            --secondary-color: #198754;
+            --dark-color: #212529;
+            --light-bg: #f8f9fa;
+            --card-shadow: 0 15px 35px rgba(0,0,0,0.08);
+            --transition-speed: 0.4s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .presentation-container {
+            width: 100%;
+            max-width: 1280px;
+            position: relative;
+        }
+
+        /* სლაიდების ძირითადი სტრუქტურა */
+        .slide {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            padding: 35px;
+            min-height: 650px;
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            border-left: 10px solid var(--accent-blue);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-right: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #38bdf8, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+            margin-bottom: 15px;
+        }
+
+        ul {
+            list-style-type: none;
+            margin-left: 5px;
+        }
+
+        li {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 25px;
+            color: #e2e8f0;
+        }
+
+        li::before {
+            content: "⚡";
+            position: absolute;
+            left: 0;
+            color: var(--accent-blue);
+        }
+
+        .badge {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-blue);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: bold;
+            align-self: flex-start;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            padding-top: 15px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* სამსვეტიანი ინტერაქტიული სამუშაო სივრცე */
+        .slide-body {
+            display: grid;
+            grid-template-columns: 1.1fr 1.2fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+            align-items: stretch;
+        }
+
+        @media (max-width: 1100px) {
+            .slide-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* კოდის რედაქტორები */
+        .code-section {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--editor-bg);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        .editor-header {
+            background-color: #131c2e;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .window-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .dot-r { background-color: #ef4444; }
+        .dot-y { background-color: #eab308; }
+        .dot-g { background-color: #22c55e; }
+
+        .file-name {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .code-area {
+            padding: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.75rem;
+            line-height: 1.45;
+            color: #e2e8f0;
+            overflow-y: auto;
+            max-height: 340px;
+            white-space: pre;
+        }
+
+        .keyword { color: #f472b6; font-weight: bold; }
+        .type { color: #38bdf8; }
+        .function { color: #fbbf24; }
+        .number { color: #fb7185; }
+        .comment { color: #64748b; font-style: italic; }
+
+        /* სიმულატორების ზონები */
+        .simulator-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            justify-content: space-between;
+        }
+
+        canvas {
+            background: #090d16;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: block;
+            width: 100%;
+        }
+
+        /* მედია ბლოკები ფოტო/ვიდეოსთვის */
+        .media-section {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .media-placeholder {
+            width: 100%;
+            height: 180px;
+            background-color: #131c2e;
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .media-placeholder img, .media-placeholder video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .media-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+        }
+
+        .media-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* მართვის ინტერფეისის ელემენტები */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        input[type="range"], select {
+            width: 100%;
+            background: #1e293b;
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            padding: 4px;
+            font-size: 0.75rem;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 11px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.8rem;
+            background-color: var(--accent-blue);
+            color: #0f172a;
+        }
+
+        .action-btn:hover { opacity: 0.9; }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 1280px;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .btn:hover { background: #0b5ed7; }
+        .btn-secondary { background: #6c757d; }
+        .btn-secondary:hover { background: #5c636a; }
+
+        /* აპარატურის იმიტაციის სტილები */
+        .hardware-container {
+            width: 100%;
+            background-color: #151f32;
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .lcd-screen {
+            background-color: #042f1a;
+            border: 4px solid #0f172a;
+            border-radius: 6px;
+            width: 100%;
+            height: 54px;
+            padding: 8px 12px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #4ade80;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .lcd-line {
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            text-shadow: 0 0 4px rgba(74, 222, 128, 0.6);
+        }
+
+        .breadboard-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            background-color: #e2e8f0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .led-light {
+            width: 20px;
+            height: 20px;
+            background-color: #475569;
+            border-radius: 50%;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.2);
+            transition: all 0.2s ease;
+        }
+
+        .led-light.active {
+            background-color: #ef4444;
+            box-shadow: 0 0 15px #ef4444, 0 0 6px #ef4444;
+        }
+
+        .breadboard-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+        }
+
+        .grid-hole {
+            width: 6px;
+            height: 6px;
+            background-color: #475569;
+            border-radius: 50%;
+        }
+
+        .metrics-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .metric-box {
+            background: rgba(56, 189, 248, 0.05);
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            padding: 6px;
+            border-radius: 6px;
+        }
+
+        .metric-box div:first-child { font-size: 0.65rem; color: var(--text-muted); }
+        .metric-box div:last-child { font-size: 0.95rem; font-weight: 700; color: var(--accent-yellow); }
+
+        .traffic-light {
+            background-color: #0f172a;
+            width: 60px;
+            height: 150px;
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            border: 2px solid #334155;
+        }
+
+        .light-bulb {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #1e293b;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+            transition: all 0.3s ease;
+        }
+
+        .light-bulb.red.active { background-color: var(--accent-red); box-shadow: 0 0 15px var(--accent-red); }
+        .light-bulb.yellow.active { background-color: var(--accent-yellow); box-shadow: 0 0 15px var(--accent-yellow); }
+        .light-bulb.green.active { background-color: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); }
+    </style>
+</head>
+<body>
+
+<div class="presentation-container">
+
+    <!-- სლაიდი 1: სატიტულო -->
+    <div class="slide active">
+        <span class="badge">სკოლა ანაბასისი[cite: 2]</span>
+        <div>
+            <h1 style="font-size: 40px; margin-bottom: 15px;">ზღაპრიდან რობოტიკამდე[cite: 5]</h1>
+            <p style="font-size: 22px; color: #cbd5e1;">კომპიუტერული აზროვნების განვითარება კლასში[cite: 5]</p>
+            <p style="margin-top: 40px; font-weight: bold; color: var(--accent-blue);">მომხსენებელი: თინათინ დავითაძე, მათემატიკისა და ფიზიკის უფროსი მასწავლებელი[cite: 2]</p>
+        </div>
+        <div class="footer">
+            <span>კონფერენცია 2026[cite: 1]</span>
+            <span>სლაიდი 1 / 7</span>
+        </div>
+    </div>
+
+    <!-- სლაიდი 2: Arduino Wokwi სიმულაცია -->
+    <div class="slide">
+        <span class="badge">უფროსი საფეხური[cite: 5]</span>
+        <h1>პორტფოლიო: Arduino დაპროგრამება კლასში[cite: 11]</h1>
+        <div class="slide-body">
+            <div class="code-section">
+                <div class="editor-header"><div class="window-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="file-name">blink_with_display.ino</div></div>
+                <div class="code-area">
+<span class="keyword">#include</span> <span class="type">&lt;LiquidCrystal_I2C.h&gt;</span>
+<span class="type">LiquidCrystal_I2C</span> <span class="function">lcd</span>(<span class="number">0x27</span>, <span class="number">16</span>, <span class="number">2</span>);
+<span class="keyword">const int</span> ledPin = <span class="number">13</span>;
+
+<span class="type">void</span> <span class="function">setup</span>() {
+  <span class="function">pinMode</span>(ledPin, <span class="type">OUTPUT</span>);
+  lcd.<span class="function">init</span>();
+  lcd.<span class="function">backlight</span>();
+}
+
+<span class="type">void</span> <span class="function">loop</span>() {
+  <span class="function">digitalWrite</span>(ledPin, <span class="type">HIGH</span>);
+  lcd.<span class="function">setCursor</span>(<span class="number">0</span>, <span class="number">0</span>);
+  lcd.<span class="function">print</span>(<span class="comment">"Wokwi Simulator!"</span>);
+  <span class="function">delay</span>(<span class="number">1000</span>);
+}</div>
+            </div>
+            <div class="simulator-section">
+                <div class="hardware-container">
+                    <div class="lcd-screen">
+                        <div class="lcd-line" id="s2L1">Arduino Active...</div>
+                        <div class="lcd-line" id="s2L2" style="color: #60a5fa;">სისტემა მზად არის</div>
+                    </div>
+                    <div class="breadboard-area">
+                        <div class="led-light" id="s2Led"></div>
+                        <div class="breadboard-grid"><div class="grid-hole"></div><div class="grid-hole"></div><div class="grid-hole"></div><div class="grid-hole"></div><div class="grid-hole"></div></div>
+                    </div>
+                </div>
+                <button class="action-btn" id="s2RunBtn">⚡ კოდის გაშვება / სიმულაცია</button>
+            </div>
+            <div class="media-section">
+                <div class="media-placeholder">
+                    <span style="font-size: 2rem;">📹 / 🖼️</span>
+                    <span class="media-title" style="margin-top: 10px;">ვიდეო ან ფოტო მასალა[cite: 2]</span>
+                </div>
+                <p style="font-size: 0.78rem; color: var(--text-muted);">ფიზიკური წრედების დაპროგრამება კლასში.[cite: 11]</p>
+            </div>
+        </div>
+        <div class="footer"><span>თინათინ დავითაძე[cite: 2]</span><span>სლაიდი 2 / 7</span></div>
+    </div>
+
+    <!-- სლაიდი 3: ზამბარის ექსპერიმენტი -->
+    <div class="slide">
+        <span class="badge">ფიზიკის ლაბორატორია[cite: 3]</span>
+        <h1>ექსპერიმენტი: „ზამბარის ცეკვა“ და რხევები[cite: 10]</h1>
+        <div class="slide-body">
+            <div class="code-section">
+                <div class="editor-header"><div class="window-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="file-name">spring_oscillator.ino</div></div>
+                <div class="code-area">
+<span class="keyword">#define</span> SPRING_K_1 <span class="number">200</span>
+<span class="type">float</span> positionX1 = <span class="number">0.15</span>;
+<span class="type">float</span> velocityV1 = <span class="number">0.0</span>;
+<span class="type">float</span> damping = <span class="number">0.05</span>;
+
+<span class="type">void</span> <span class="function">loop</span>() {
+  <span class="type">float</span> springForce = -SPRING_K_1 * positionX1;
+  <span class="type">float</span> acceleration = springForce / <span class="number">0.10</span>;
+  velocityV1 += acceleration * <span class="number">0.05</span>;
+  positionX1 += velocityV1 * <span class="number">0.05</span>;
+}</div>
+            </div>
+            <div class="simulator-section">
+                <canvas id="springCanvas" width="450" height="150"></canvas>
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label>რეჟიმი</label>
+                        <select id="springMode"><option value="independent">დამოუკიდებელი</option><option value="coupled">გადაჯაჭვული</option></select>
+                    </div>
+                    <div class="control-group"><label>წინააღმდეგობა</label><input id="springDamping" type="range" min="0" max="0.4" step="0.01" value="0.05"></div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="action-btn" id="springRun" style="flex: 1.2;">⚡ ჩართვა</button>
+                    <button class="action-btn" id="springKick" style="background-color: var(--accent-green); flex: 0.8;">🪀 ბიძგი</button>
+                </div>
+            </div>
+            <div class="media-section">
+                <div class="media-placeholder">
+                    <span style="font-size: 2rem;">📹 / 🖼️</span>
+                    <span class="media-title">ჰარმონიული ოსცილატორი[cite: 3]</span>
+                </div>
+                <p style="font-size: 0.78rem; color: var(--text-muted);">კვლევაზე დაფუძნებული სწავლების (IBSE) მეთოდი.[cite: 3, 10]</p>
+            </div>
+        </div>
+        <div class="footer"><span>ნორჩ მკვლევართა კლუბი[cite: 2]</span><span>სლაიდი 3 / 7</span></div>
+    </div>
+
+    <!-- სლაიდი 4: ხელოვნური ცისარტყელა -->
+    <div class="slide">
+        <span class="badge">პროექტი „ფიზტერია“[cite: 2]</span>
+        <h1>ხელოვნური ცისარტყელა და დისპერსია[cite: 1, 2]</h1>
+        <div class="slide-body">
+            <div class="code-section">
+                <div class="editor-header"><div class="window-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="file-name">rainbow_dispersion.js</div></div>
+                <div class="code-area">
+<span class="keyword">const</span> wavelengths = [<span class="number">700</span>, <span class="number">580</span>, <span class="number">420</span>];
+<span class="keyword">function</span> <span class="function">calculateRefraction</span>(angle, wl, disp) {
+  <span class="keyword">const</span> baseN = <span class="number">1.33</span>;
+  <span class="keyword">const</span> n = baseN + <span class="number">0.05</span> * (<span class="number">1</span> / (wl / <span class="number">500</span>) - <span class="number">1</span>) * disp;
+  <span class="keyword">return</span> Math.<span class="function">asin</span>(Math.<span class="function">sin</span>(angle) / n);
+}</div>
+            </div>
+            <div class="simulator-section">
+                <canvas id="rainbowCanvas" width="450" height="150"></canvas>
+                <div class="controls-grid">
+                    <div class="control-group"><label>ინტენსივობა</label><input id="rainbowIntensity" type="range" min="0.2" max="2" step="0.1" value="1.2"></div>
+                    <div class="control-group"><label>დისპერსია</label><input id="rainbowDispersion" type="range" min="0.2" max="2.5" step="0.1" value="1.3"></div>
+                </div>
+                <button class="action-btn" id="rainbowReset" style="background-color: var(--accent-purple); color: white;">🔄 საწყის პოზიციაზე დაბრუნება</button>
+            </div>
+            <div class="media-section">
+                <div class="media-placeholder">
+                    <span style="font-size: 2rem;">📹 / 🖼️</span>
+                    <span class="media-title">ექსპერიმენტის კადრები[cite: 2]</span>
+                </div>
+                <p style="font-size: 0.78rem; color: var(--text-muted);">სინათლის გარდატეხა წვიმის წვეთში.[cite: 1, 13]</p>
+            </div>
+        </div>
+        <div class="footer"><span>საავტორო პლატფორმა „ფიზტერია“[cite: 2]</span><span>სლაიდი 4 / 7</span></div>
+    </div>
+
+    <!-- სლაიდი 5: ელექტრო გენერატორი -->
+    <div class="slide">
+        <span class="badge">ელექტროობა[cite: 2]</span>
+        <h1>ელექტრომაგნიტური ინდუქცია და გენერატორი[cite: 2]</h1>
+        <div class="slide-body">
+            <div class="code-section">
+                <div class="editor-header"><div class="window-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="file-name">generator_monitor.ino</div></div>
+                <div class="code-area">
+<span class="keyword">const int</span> generatorPin = A0;
+<span class="keyword">const int</span> ledPin = <span class="number">9</span>;
+
+<span class="type">void</span> <span class="function">loop</span>() {
+  <span class="keyword">int</span> rawValue = <span class="function">analogRead</span>(generatorPin);
+  <span class="keyword">int</span> brightness = <span class="function">map</span>(rawValue, <span class="number">0</span>, <span class="number">1023</span>, <span class="number">0</span>, <span class="number">255</span>);
+  <span class="function">analogWrite</span>(ledPin, brightness);
+}</div>
+            </div>
+            <div class="simulator-section">
+                <canvas id="generatorCanvas" width="450" height="150"></canvas>
+                <div class="controls-grid">
+                    <div class="control-group"><label>სიჩქარე</label><span id="genRpm" style="font-weight:700; color:var(--accent-yellow);">0 RPM</span></div>
+                    <div class="control-group"><label>ძაბვა</label><span id="genVolt" style="font-weight:700; color:var(--accent-blue);">0.00 V</span></div>
+                </div>
+                <button class="action-btn" id="genSpinBtn" style="background: linear-gradient(to right, #eab308, #ca8a04); color: #0f172a;">⚙️ ტურბინის დატრიალება</button>
+            </div>
+            <div class="media-section">
+                <div class="media-placeholder">
+                    <span style="font-size: 2rem;">📹 / 🖼️</span>
+                    <span class="media-title">ინდუქციის მაკეტი[cite: 2]</span>
+                </div>
+                <p style="font-size: 0.78rem; color: var(--text-muted);">მექანიკური ენერგიის ელექტროენერგიად გარდაქმნა.[cite: 2, 4]</p>
+            </div>
+        </div>
+        <div class="footer"><span>STEM ინტეგრაცია[cite: 2, 4]</span><span>სლაიდი 5 / 7</span></div>
+    </div>
+
+    <!-- სლაიდი 6: ომის კანონი (მიმდევრობითი/პარალელური) -->
+    <div class="slide">
+        <span class="badge">მათემატიკა & ფიზიკა[cite: 2]</span>
+        <h1>ომის კანონი და წრედების შეერთება[cite: 2]</h1>
+        <div class="slide-body">
+            <div class="code-section">
+                <div class="editor-header"><div class="window-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="file-name">ohms_law_circuits.ino</div></div>
+                <div class="code-area">
+<span class="type">float</span> <span class="function">getCircuitCurrent</span>(<span class="type">float</span> V, <span class="type">float</span> R1, <span class="type">float</span> R2, <span class="type">bool</span> isParallel) {
+  <span class="type">float</span> totalR = isParallel ? (R1 * R2) / (R1 + R2) : R1 + R2;
+  <span class="keyword">return</span> V / totalR;
+}</div>
+            </div>
+            <div class="simulator-section">
+                <canvas id="circuitCanvas" width="450" height="130"></canvas>
+                <div class="metrics-bar">
+                    <div class="metric-box"><div>წინაღობა</div><div id="ohmRes">0.0 Ω</div></div>
+                    <div class="metric-box"><div>დენი</div><div id="ohmAmp">0.0 A</div></div>
+                    <div class="metric-box"><div>მოცულობა</div><div id="ohmVol">0 მმ³</div></div>
+                </div>
+                <div class="controls-grid">
+                    <select id="ohmType"><option value="series">მიმდევრობითი</option><option value="parallel">პარალელური</option></select>
+                    <input id="ohmArea" type="range" min="0.1" max="2" step="0.1" value="0.5">
+                    <input id="ohmVolt" type="range" min="3" max="24" value="9">
+                    <input id="ohmLength" type="range" min="0.5" max="4.0" step="0.1" value="1.5">
+                </div>
+            </div>
+            <div class="media-section">
+                <div class="media-placeholder">
+                    <span style="font-size: 2rem;">📹 / 🖼️</span>
+                    <span class="media-title">გაზომვები წრედში[cite: 2]</span>
+                </div>
+                <p style="font-size: 0.78rem; color: var(--text-muted);">განივკვეთი, სიგრძე და ამპერის დადგენა.[cite: 2, 9]</p>
+            </div>
+        </div>
+        <div class="footer"><span>ილიას განათლების ფესტივალი[cite: 2]</span><span>სლაიდი 6 / 7</span></div>
+    </div>
+
+    <!-- სლაიდი 7: სასკოლო შუქნიშანი -->
+    <div class="slide">
+        <span class="badge">უსაფრთხოება & კოდი[cite: 1]</span>
+        <h1>პროექტი: „სასკოლო შუქნიშანი“[cite: 1]</h1>
+        <div class="slide-body">
+            <div class="code-section">
+                <div class="editor-header"><div class="window-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="file-name">school_traffic_light.ino</div></div>
+                <div class="code-area">
+<span class="type">void</span> <span class="function">loop</span>() {
+  <span class="function">digitalWrite</span>(redPin, <span class="type">HIGH</span>);
+  <span class="function">delay</span>(<span class="number">3000</span>);
+  <span class="function">digitalWrite</span>(yellowPin, <span class="type">HIGH</span>);
+  <span class="function">delay</span>(<span class="number">1000</span>);
+}</div>
+            </div>
+            <div class="simulator-section">
+                <div class="hardware-container" style="flex-direction: row; justify-content: space-around;">
+                    <div class="traffic-light">
+                        <div class="light-bulb red" id="tlRed"></div>
+                        <div class="light-bulb yellow" id="tlYellow"></div>
+                        <div class="light-bulb green" id="tlGreen"></div>
+                    </div>
+                    <div class="metric-box" style="width: 120px;"><div>HIGH PIN</div><div id="tlPin">NONE</div></div>
+                </div>
+                <button class="action-btn" id="tlBtn">⚡ სიმულაციის გაშვება</button>
+            </div>
+            <div class="media-section">
+                <div class="media-placeholder">
+                    <span style="font-size: 2rem;">📹 / 🖼️</span>
+                    <span class="media-title">შუქნიშნის მაკეტი[cite: 2]</span>
+                </div>
+                <p style="font-size: 0.78rem; color: var(--text-muted);">საგზაო უსაფრთხოების მოდელირება.[cite: 1]</p>
+            </div>
+        </div>
+        <div class="footer"><span>დასასრული — თინათინ დავითაძე[cite: 2]</span><span>სლაიდი 7 / 7</span></div>
+    </div>
+
+</div>
+
+<!-- ნავიგაციის კონტროლები -->
+<div class="controls">
+    <button class="btn btn-secondary" onclick="prevSlide()">◀ წინა</button>
+    <button class="btn" onclick="nextSlide()">შემდეგი ▶</button>
+</div>
+
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+
+    function showSlide(index) {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (index + slides.length) % slides.length;
+        slides[currentSlide].classList.add('active');
+    }
+
+    function nextSlide() { showSlide(currentSlide + 1); }
+    function prevSlide() { showSlide(currentSlide - 1); }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') nextSlide();
+        if (e.key === 'ArrowLeft') prevSlide();
+    });
+
+    // ==================== SIMULATION LOGIC ====================
+
+    // 1. Arduino Wokwi
+    const s2Btn = document.getElementById('s2RunBtn');
+    const s2Led = document.getElementById('s2Led');
+    const s2L1 = document.getElementById('s2L1');
+    const s2L2 = document.getElementById('s2L2');
+    let s2Running = false, s2Interval = null;
+
+    s2Btn.addEventListener('click', () => {
+        s2Running = !s2Running;
+        if (s2Running) {
+            s2Btn.innerText = "🛑 გაჩერება"; s2Btn.style.background = "#ef4444"; s2L1.innerText = "Wokwi Active!";
+            let state = false;
+            s2Interval = setInterval(() => {
+                state = !state;
+                s2Led.classList.toggle('active', state);
+                s2L2.innerText = state ? "LED Status: ON" : "LED Status: OFF";
+                s2L2.style.color = state ? "#4ade80" : "#f87171";
+            }, 1000);
+        } else {
+            clearInterval(s2Interval); s2Led.classList.remove('active');
+            s2Btn.innerText = "⚡ სიმულაციის გაშვება"; s2Btn.style.background = "var(--accent-blue)";
+            s2L1.innerText = "Arduino Active..."; s2L2.innerText = "სისტემა მზად არის"; s2L2.style.color = "#60a5fa";
+        }
+    });
+
+    // 2. Spring Simulator
+    const sprCanvas = document.getElementById('springCanvas');
+    const sprCtx = sprCanvas.getContext('2d');
+    const sprMode = document.getElementById('springMode');
+    const sprDamping = document.getElementById('springDamping');
+    const sprRun = document.getElementById('springRun');
+    const sprKick = document.getElementById('springKick');
+
+    let sprRunning = false, sprLastTime = 0;
+    let sprState = { x1: 0.15, v1: 0, x2: -0.10, v2: 0, m1: 0.10, m2: 0.12 };
+
+    function drawSprLines(xStart, yStart, xEnd, yEnd) {
+        sprCtx.beginPath(); sprCtx.moveTo(xStart, yStart);
+        let len = Math.hypot(xEnd - xStart, yEnd - yStart);
+        sprCtx.save(); sprCtx.translate(xStart, yStart); sprCtx.rotate(Math.atan2(yEnd - yStart, xEnd - xStart));
+        for (let i = 0; i <= 40; i++) {
+            let t = i / 40;
+            sprCtx.lineTo(t * len, i === 0 || i === 40 ? 0 : Math.sin(t * Math.PI * 8) * 6);
+        }
+        sprCtx.strokeStyle = '#38bdf8'; sprCtx.lineWidth = 2; sprCtx.stroke(); sprCtx.restore();
+    }
+
+    function sprLoop(ts) {
+        let dt = sprLastTime ? (ts - sprLastTime) / 1000 : 0; sprLastTime = ts;
+        if (dt > 0.1) dt = 0.1;
+        if (sprRunning) {
+            let b = parseFloat(sprDamping.value);
+            let f1 = -200 * sprState.x1 - b * sprState.v1;
+            let f2 = -150 * sprState.x2 - b * sprState.v2;
+            if (sprMode.value === 'coupled') { f1 += 40 * (sprState.x2 - sprState.x1); f2 -= 40 * (sprState.x2 - sprState.x1); }
+            sprState.v1 += (f1 / sprState.m1) * dt; sprState.x1 += sprState.v1 * dt;
+            sprState.v2 += (f2 / sprState.m2) * dt; sprState.x2 += sprState.v2 * dt;
+        }
+        sprCtx.clearRect(0,0,sprCanvas.width,sprCanvas.height);
+        sprCtx.fillStyle = '#475569'; sprCtx.fillRect(30, 20, 10, 110);
+        drawSprLines(40, 45, 200 + sprState.x1 * 100, 45);
+        drawSprLines(40, 105, 200 + sprState.x2 * 100, 105);
+        sprCtx.beginPath(); sprCtx.arc(200 + sprState.x1 * 100, 45, 10, 0, Math.PI*2); sprCtx.fillStyle = '#ef4444'; sprCtx.fill();
+        sprCtx.beginPath(); sprCtx.arc(200 + sprState.x2 * 100, 105, 10, 0, Math.PI*2); sprCtx.fillStyle = '#10b981'; sprCtx.fill();
+        requestAnimationFrame(sprLoop);
+    }
+    sprRun.addEventListener('click', () => { sprRunning = !sprRunning; sprRun.innerText = sprRunning ? "🛑 გაჩერება" : "⚡ ჩართვა"; });
+    sprKick.addEventListener('click', () => { sprState.v1 += 0.7; sprState.v2 -= 0.5; });
+    requestAnimationFrame(sprLoop);
+
+    // 3. Rainbow Dispersion
+    const rbCanvas = document.getElementById('rainbowCanvas');
+    const rbCtx = rbCanvas.getContext('2d');
+    const rbInt = document.getElementById('rainbowIntensity');
+    const rbDisp = document.getElementById('rainbowDispersion');
+    const rbReset = document.getElementById('rainbowReset');
+
+    function drawRb() {
+        rbCtx.clearRect(0, 0, rbCanvas.width, rbCanvas.height);
+        rbCtx.beginPath(); rbCtx.arc(240, 75, 30, 0, Math.PI * 2); rbCtx.strokeStyle = 'rgba(56,189,248,0.5)'; rbCtx.stroke();
+        rbCtx.beginPath(); rbCtx.arc(60, 75, 5, 0, Math.PI * 2); rbCtx.fillStyle = '#fff'; rbCtx.fill();
+        rbCtx.beginPath(); rbCtx.moveTo(65, 75); rbCtx.lineTo(210, 75); rbCtx.strokeStyle = 'rgba(255,255,255,0.2)'; rbCtx.stroke();
+        let intensity = parseFloat(rbInt.value), dispersion = parseFloat(rbDisp.value);
+        ['#ef4444', '#facc15', '#3b82f6'].forEach((color, idx) => {
+            rbCtx.beginPath(); rbCtx.moveTo(240, 75);
+            let shift = (idx - 1) * dispersion * 12;
+            rbCtx.quadraticCurveTo(270, 75 + shift * 0.5, rbCanvas.width - 20, 75 + shift * 2.5);
+            rbCtx.strokeStyle = color; rbCtx.lineWidth = 3 * intensity; rbCtx.stroke();
+        });
+    }
+    [rbInt, rbDisp].forEach(el => el.addEventListener('input', drawRb));
+    rbReset.addEventListener('click', drawRb);
+    drawRb();
+
+    // 4. Generator Induction
+    const genCanvas = document.getElementById('generatorCanvas');
+    const genCtx = genCanvas.getContext('2d');
+    const genSpin = document.getElementById('genSpinBtn');
+    const genRpm = document.getElementById('genRpm');
+    const genVolt = document.getElementById('genVolt');
+    let genSpeed = 0, genAngle = 0;
+
+    function genLoop() {
+        genSpeed *= 0.985; genAngle += genSpeed * 0.05;
+        genRpm.innerText = Math.round(genSpeed * 120) + " RPM";
+        genVolt.innerText = (genSpeed * 0.85).toFixed(2) + " V";
+        genCtx.clearRect(0, 0, genCanvas.width, genCanvas.height);
+        genCtx.beginPath(); genCtx.arc(100, 75, 30, 0, Math.PI*2); genCtx.strokeStyle = '#64748b'; genCtx.stroke();
+        genCtx.save(); genCtx.translate(100, 75); genCtx.rotate(genAngle);
+        for(let i=0; i<4; i++) { genCtx.rotate(Math.PI/2); genCtx.fillRect(-3, -24, 6, 18); }
+        genCtx.restore();
+        genCtx.beginPath(); genCtx.moveTo(130, 75); genCtx.lineTo(300, 75); genCtx.strokeStyle = '#b45309'; genCtx.stroke();
+        genCtx.beginPath(); genCtx.arc(300, 75, 8, 0, Math.PI*2); genCtx.fillStyle = genSpeed > 0.5 ? `rgba(245,158,11,${genSpeed/5})` : '#475569'; genCtx.fill();
+        requestAnimationFrame(genLoop);
+    }
+    genSpin.addEventListener('click', () => { genSpeed += 4.0; });
+    genLoop();
+
+    // 5. Ohm's Law
+    const ohmCanvas = document.getElementById('circuitCanvas');
+    const ohmCtx = ohmCanvas.getContext('2d');
+    const ohmType = document.getElementById('ohmType');
+    const ohmArea = document.getElementById('ohmArea');
+    const ohmVolt = document.getElementById('ohmVolt');
+    const ohmLength = document.getElementById('ohmLength');
+
+    function drawOhm() {
+        let V = parseFloat(ohmVolt.value), L = parseFloat(ohmLength.value), A = parseFloat(ohmArea.value);
+        let R = 8.0 * (L / A);
+        let totalR = ohmType.value === 'parallel' ? R / 2 : R * 2;
+        document.getElementById('ohmRes').innerText = totalR.toFixed(1) + ' Ω';
+        document.getElementById('ohmAmp').innerText = (V / totalR).toFixed(2) + ' A';
+        document.getElementById('ohmVol').innerText = (A * L * 1000).toFixed(0) + ' მმ³';
+        ohmCtx.clearRect(0,0,ohmCanvas.width,ohmCanvas.height);
+        ohmCtx.strokeStyle = '#334155'; ohmCtx.lineWidth = 4; ohmCtx.strokeRect(40, 20, 360, 90);
+        ohmCtx.fillStyle = '#f59e0b'; ohmCtx.fillRect(150, 10, 40, 20);
+        if(ohmType.value === 'parallel') { ohmCtx.beginPath(); ohmCtx.moveTo(220, 20); ohmCtx.lineTo(220, 110); ohmCtx.stroke(); ohmCtx.fillRect(200, 55, 40, 20); }
+    }
+    [ohmType, ohmArea, ohmVolt, ohmLength].forEach(el => el.addEventListener('input', drawOhm));
+    drawOhm();
+
+    // 6. Traffic Light
+    const tlBtn = document.getElementById('tlBtn');
+    const tlRed = document.getElementById('tlRed'), tlYellow = document.getElementById('tlYellow'), tlGreen = document.getElementById('tlGreen');
+    const tlPin = document.getElementById('tlPin');
+    let tlRunning = false, tlCycle = 0, tlTimeout = null;
+
+    function runTl() {
+        if(!tlRunning) return;
+        tlRed.classList.remove('active'); tlYellow.classList.remove('active'); tlGreen.classList.remove('active');
+        if (tlCycle === 0) { tlRed.classList.add('active'); tlPin.innerText = "PIN 12"; tlCycle = 1; tlTimeout = setTimeout(runTl, 2000); }
+        else if (tlCycle === 1) { tlYellow.classList.add('active'); tlPin.innerText = "PIN 11"; tlCycle = 2; tlTimeout = setTimeout(runTl, 1000); }
+        else { tlGreen.classList.add('active'); tlPin.innerText = "PIN 10"; tlCycle = 0; tlTimeout = setTimeout(runTl, 2000); }
+    }
+    tlBtn.addEventListener('click', () => {
+        tlRunning = !tlRunning;
+        if(tlRunning) { tlBtn.innerText = "🛑 გაჩერება"; tlBtn.style.background = "#ef4444"; runTl(); }
+        else { clearTimeout(tlTimeout); tlBtn.innerText = "⚡ სიმულაციის გაშვება"; tlBtn.style.background = "var(--accent-blue)"; tlPin.innerText = "NONE"; tlRed.classList.remove('active'); tlYellow.classList.remove('active'); tlGreen.classList.remove('active'); tlCycle = 0; }
+    });
+</script>
+
+</body>
+</html>

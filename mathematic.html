@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>პორტფოლიო: მათემატიკა მოძრაობაში!</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --accent-blue: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-pink: #f472b6;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --editor-bg: #0b0f19;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* საპრეზენტაციო სლაიდის ჩარჩო (16:9 ასპექტი) */
+        .slide-container {
+            width: 100%;
+            max-width: 1280px;
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ჰედერი */
+        .slide-header {
+            padding: 20px 35px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .slide-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #38bdf8, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .slide-tag {
+            font-size: 0.8rem;
+            background-color: rgba(244, 114, 182, 0.1);
+            color: var(--accent-pink);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* სამსვეტიანი სტრუქტურა */
+        .slide-body {
+            display: grid;
+            grid-template-columns: 1.1fr 1.1fr 1fr;
+            gap: 20px;
+            padding: 25px;
+            align-items: stretch;
+        }
+
+        @media (max-width: 1100px) {
+            .slide-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* კოდის სექცია */
+        .code-section {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--editor-bg);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        .editor-header {
+            background-color: #131c2e;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .window-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .dot-r { background-color: #ef4444; }
+        .dot-y { background-color: #eab308; }
+        .dot-g { background-color: #22c55e; }
+
+        .file-name {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .code-area {
+            padding: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.75rem;
+            line-height: 1.45;
+            color: #e2e8f0;
+            overflow-y: auto;
+            max-height: 420px;
+        }
+
+        .keyword { color: #f472b6; font-weight: bold; }
+        .type { color: #38bdf8; }
+        .function { color: #fbbf24; }
+        .number { color: #fb7185; }
+        .comment { color: #64748b; font-style: italic; }
+
+        /* სიმულატორი */
+        .simulator-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            justify-content: space-between;
+        }
+
+        canvas {
+            background: #090d16;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: block;
+            width: 100%;
+        }
+
+        /* მართვა */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            background: rgba(0,0,0,0.25);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        input[type="range"], select {
+            width: 100%;
+            background: #1e293b;
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            padding: 4px;
+            font-size: 0.75rem;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.8rem;
+            background: linear-gradient(to right, #f472b6, #db2777);
+            color: white;
+        }
+
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* მედია სექცია */
+        .media-section {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .media-placeholder {
+            width: 100%;
+            height: 180px;
+            background-color: #131c2e;
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .media-placeholder video, .media-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .media-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+        }
+
+        .media-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* ფუტერი */
+        .slide-footer {
+            padding: 15px 35px;
+            background-color: rgba(15, 23, 42, 0.6);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container">
+        
+        <!-- ჰედერი -->
+        <div class="slide-header">
+            <div>
+                <h1>მათემატიკა მოძრაობაში![cite: 2]</h1>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">მათემატიკისა და ფიზიკა-პროგრამირების STEM ინტეგრაცია[cite: 2]</p>
+            </div>
+            <div class="slide-tag">სლაიდი 13 / 13</div>
+        </div>
+
+        <!-- შინაარსი -->
+        <div class="slide-body">
+            
+            <!-- მარცხენა სვეტი: კოდი -->
+            <div class="code-section">
+                <div class="editor-header">
+                    <div class="window-dots">
+                        <div class="dot dot-r"></div>
+                        <div class="dot dot-y"></div>
+                        <div class="dot dot-g"></div>
+                    </div>
+                    <div class="file-name">robot_geometry.ino</div>
+                </div>
+                <div class="code-area">
+<span class="keyword">const float</span> PI_VAL = <span class="number">3.14159</span>;
+<span class="type">float</span> currentX = <span class="number">0.0</span>; <span class="comment">// რობოტის საწყისი X</span>
+<span class="type">float</span> currentY = <span class="number">0.0</span>; <span class="comment">// რობოტის საწყისი Y</span>
+
+<span class="type">void</span> <span class="function">moveRobot</span>(<span class="type">float</span> angleDegree, <span class="type">float</span> distance) {
+  <span class="comment">// კუთხის გადაყვანა რადიანებში</span>
+  <span class="type">float</span> rad = angleDegree * (PI_VAL / <span class="number">180.0</span>);
+  
+  <span class="comment">// კოორდინატების გამოთვლა ტრიგონომეტრიით</span>
+  currentX += distance * <span class="function">cos</span>(rad);
+  currentY += distance * <span class="function">sin</span>(rad);
+  
+  <span class="function">Serial</span>.<span class="function">print</span>(<span class="comment">"Robot Position: ("</span>);
+  <span class="function">Serial</span>.<span class="function">print</span>(currentX);
+  <span class="function">Serial</span>.<span class="function">print</span>(<span class="comment">", "</span>);
+  <span class="function">Serial</span>.<span class="function">print</span>(currentY);
+  <span class="function">Serial</span>.<span class="function">println</span>(<span class="comment">")"</span>);
+}</div>
+            </div>
+
+            <!-- შუა სვეტი: ინტერაქტიული კოორდინატთა სისტემა -->
+            <div class="simulator-section">
+                
+                <h3 style="font-size: 1rem; font-weight: 600; color: var(--accent-pink); text-align: center;">ინტერაქტიული კოორდინატთა ბადე</h3>
+
+                <canvas id="mathCanvas" width="340" height="200"></canvas>
+
+                <!-- მართვა -->
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label>მოძრაობის კუთხე: <span id="angleLabel" style="color: var(--accent-pink);">0°</span></label>
+                        <input id="angleSlider" type="range" min="0" max="360" value="45">
+                    </div>
+
+                    <div class="control-group">
+                        <label>გეომეტრიული ფიგურა</label>
+                        <select id="shapeSelect">
+                            <option value="manual">ხელით მართვა</option>
+                            <option value="square">კვადრატი (90° კუთხეები)</option>
+                            <option value="triangle">სამკუთხედი (120° კუთხეები)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="action-btn" id="robotActionBtn">🚀 რობოტის ამოძრავება</button>
+            </div>
+
+            <!-- მარჯვენა სვეტი: მედია პორტფოლიო -->
+            <div class="media-section">
+                <div class="media-placeholder">
+                    <!-- ჩასვით თქვენი ექსპერიმენტის რეალური ფოტო ან ვიდეო აქ[cite: 2] -->
+                    <!-- <video src="robot_math.mp4" controls autoplay muted></video> -->
+                    <!-- <img src="experiment_pic.jpg" alt="Robot Math"> -->
+                    <span style="font-size: 2rem;">📹 / 🖼️</span>
+                    <span class="media-title" style="margin-top: 10px;">ტრაექტორიების მედია[cite: 2]</span>
+                    <span class="media-desc">ჩაანაცვლეთ რობოტების მოძრაობის რეალური ვიდეო მასალით[cite: 2]</span>
+                </div>
+                <div>
+                    <h4 style="font-size: 0.9rem; margin-bottom: 5px; color: var(--accent-green);">პრაქტიკული ინტეგრაცია</h4>
+                    <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;">მოსწავლეები თვალსაჩინოდ აღიქვამენ კუთხეების, პერიმეტრებისა და კოორდინატთა სისტემის თეორიულ ცნებებს რობოტის რეალური მოძრაობის საშუალებით[cite: 2].</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ფუტერი -->
+        <div class="slide-footer">
+            <span>პედაგოგი: თინათინ დავითაძე[cite: 2]</span>
+            <span>ინოვაციური მიდგომები მათემატიკისა და ფიზიკის სწავლებაში[cite: 2]</span>
+        </div>
+
+    </div>
+
+    <!-- JS ლოგიკა სიმულაციისთვის -->
+    <script>
+        const canvas = document.getElementById('mathCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const angleSlider = document.getElementById('angleSlider');
+        const angleLabel = document.getElementById('angleLabel');
+        const shapeSelect = document.getElementById('shapeSelect');
+        const actionBtn = document.getElementById('robotActionBtn');
+
+        // რობოტის საწყისი მდგომარეობა
+        let robot = { x: 170, y: 100, angle: 45 };
+        let path = [{ x: 170, y: 100 }]; // გავლილი გზის ისტორია
+        let isAnimating = false;
+
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // ფონი
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // კოორდინატთა ბადის ხაზვა
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 1;
+
+            // ვერტიკალური ხაზები
+            for (let x = 20; x < canvas.width; x += 20) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+
+            // ჰორიზონტალური ხაზები
+            for (let y = 20; y < canvas.height; y += 20) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // კოორდინატთა ღერძები (ცენტრი)
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 2;
+            
+            // X ღერძი
+            ctx.beginPath();
+            ctx.moveTo(0, 100);
+            ctx.lineTo(canvas.width, 100);
+            ctx.stroke();
+
+            // Y ღერძი
+            ctx.beginPath();
+            ctx.moveTo(170, 0);
+            ctx.lineTo(170, canvas.height);
+            ctx.stroke();
+
+            // გავლილი ტრაექტორიის ხაზვა
+            if (path.length > 1) {
+                ctx.beginPath();
+                ctx.moveTo(path[0].x, path[0].y);
+                for (let i = 1; i < path.length; i++) {
+                    ctx.lineTo(path[i].x, path[i].y);
+                }
+                ctx.strokeStyle = '#f472b6';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+
+            // რობოტის გამოსახვა (პატარა სამკუთხედი ან წრე)
+            ctx.save();
+            ctx.translate(robot.x, robot.y);
+            ctx.rotate((robot.angle * Math.PI) / 180);
+
+            // რობოტის სხეული
+            ctx.beginPath();
+            ctx.arc(0, 0, 8, 0, Math.PI * 2);
+            ctx.fillStyle = '#38bdf8';
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // მიმართულების ისარი
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(12, 0);
+            ctx.strokeStyle = '#4ade80';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function updateLabels() {
+            const angle = angleSlider.value;
+            angleLabel.innerText = angle + '°';
+            robot.angle = parseInt(angle);
+            drawGrid();
+        }
+
+        // რობოტის ნაბიჯ-ნაბიჯ გადაადგილების ფუნქცია
+        function animateMove(targetAngle, distance, callback) {
+            let steps = 20;
+            let currentStep = 0;
+            robot.angle = targetAngle;
+
+            const rad = (targetAngle * Math.PI) / 180;
+            const dx = (distance * Math.cos(rad)) / steps;
+            const dy = (distance * Math.sin(rad)) / steps;
+
+            const interval = setInterval(() => {
+                robot.x += dx;
+                robot.y += dy;
+                path.push({ x: robot.x, y: robot.y });
+                drawGrid();
+
+                currentStep++;
+                if (currentStep >= steps) {
+                    clearInterval(interval);
+                    if (callback) callback();
+                }
+            }, 30);
+        }
+
+        // ფიგურების ავტომატური ხაზვა
+        function drawSquare() {
+            path = [{ x: robot.x, y: robot.y }]; // ტრაექტორიის გასუფთავება
+            animateMove(0, 50, () => {
+                animateMove(90, 50, () => {
+                    animateMove(180, 50, () => {
+                        animateMove(270, 50, () => {
+                            isAnimating = false;
+                            actionBtn.innerText = "🚀 რობოტის ამოძრავება";
+                        });
+                    });
+                });
+            });
+        }
+
+        function drawTriangle() {
+            path = [{ x: robot.x, y: robot.y }];
+            animateMove(0, 60, () => {
+                animateMove(120, 60, () => {
+                    animateMove(240, 60, () => {
+                        isAnimating = false;
+                        actionBtn.innerText = "🚀 რობოტის ამოძრავება";
+                    });
+                });
+            });
+        }
+
+        actionBtn.addEventListener('click', () => {
+            if (isAnimating) return;
+            isAnimating = true;
+            actionBtn.innerText = "⚡ მოძრაობს...";
+
+            const mode = shapeSelect.value;
+            if (mode === 'square') {
+                robot = { x: 145, y: 75, angle: 0 };
+                drawSquare();
+            } else if (mode === 'triangle') {
+                robot = { x: 140, y: 120, angle: 0 };
+                drawTriangle();
+            } else {
+                // ხელით მართვა - გადაადგილდება არჩეული კუთხით
+                const targetAngle = parseInt(angleSlider.value);
+                animateMove(targetAngle, 40, () => {
+                    isAnimating = false;
+                    actionBtn.innerText = "🚀 რობოტის ამოძრავება";
+                });
+            }
+        });
+
+        angleSlider.addEventListener('input', updateLabels);
+        shapeSelect.addEventListener('change', () => {
+            path = [{ x: 170, y: 100 }];
+            robot = { x: 170, y: 100, angle: parseInt(angleSlider.value) };
+            drawGrid();
+        });
+
+        // საწყისი ჩვენება
+        drawGrid();
+    </script>
+</body>
+</html>
