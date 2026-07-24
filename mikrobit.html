@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <title>Micro:bit Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            padding: 20px;
+        }
+        .code-container {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            overflow-x: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .code-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #4ec9b0;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Micro:bit-ის კოდი (JavaScript)</h2>
+
+    <div class="code-container">
+        <div class="code-title">// MakeCode JavaScript Code</div>
+        <pre><code>// on start - მუდმივი წერტილები
+led.plot(1, 0)
+led.plot(3, 0)
+led.plot(2, 1)
+led.plot(1, 3)
+led.plot(2, 3)
+led.plot(3, 3)
+
+// forever - მოციმციმე წერტილები
+basic.forever(function () {
+    led.toggle(0, 4)
+    led.toggle(4, 4)
+    led.toggle(0, 2)
+    basic.pause(1000)
+    led.toggle(4, 2)
+})</code></pre>
+    </div>
+
+</body>
+</html>
